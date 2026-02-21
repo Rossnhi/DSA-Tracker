@@ -1,7 +1,7 @@
 const CACHE_NAME = 'dsa-tracker-v3';
 const BASE = '/DSA-Tracker';
 const urlsToCache = [
-  `${BASE}/dsa-tracker.html`,
+  `${BASE}/index.html`,
   `${BASE}/manifest.json`,
   `${BASE}/icon.svg`,
   `${BASE}/`

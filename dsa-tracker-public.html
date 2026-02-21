@@ -1,0 +1,2745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="DSA Problem Tracker with Spaced Repetition">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="DSA Tracker">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
+    <link rel="apple-touch-icon" href="icon.svg">
+    <title>DSA Problem Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #141922;
+            --bg-tertiary: #1e2530;
+            --accent-primary: #00ff88;
+            --accent-secondary: #00d9ff;
+            --accent-danger: #ff4757;
+            --accent-warning: #ffa502;
+            --text-primary: #e4e7eb;
+            --text-secondary: #9ca3af;
+            --border-color: #2d3748;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(0, 255, 136, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(0, 217, 255, 0.03) 0%, transparent 50%);
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            margin-bottom: 3rem;
+            text-align: center;
+            position: relative;
+        }
+
+        h1 {
+            font-family: 'Space Mono', monospace;
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+            animation: glow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                filter: drop-shadow(0 0 10px rgba(0, 255, 136, 0.3));
+            }
+            to {
+                filter: drop-shadow(0 0 20px rgba(0, 217, 255, 0.3));
+            }
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card-title {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-title::before {
+            content: '▶';
+            font-size: 0.8rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; transform: translateX(0); }
+            50% { opacity: 1; transform: translateX(3px); }
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.1);
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1rem;
+        }
+
+        button {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border: none;
+            border-radius: 6px;
+            color: var(--bg-primary);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 255, 136, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .due-today {
+            background: var(--bg-secondary);
+            border: 1px solid var(--accent-warning);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .due-today h3 {
+            color: var(--accent-warning);
+            font-family: 'Space Mono', monospace;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .due-today h3::before {
+            content: '⚡';
+            animation: bounce 1s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .due-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .due-item {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-left: 3px solid var(--accent-warning);
+            padding: 1rem;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .due-item.overdue {
+            border-left-color: var(--accent-danger);
+            background: rgba(255, 71, 87, 0.05);
+        }
+
+        .due-item:hover {
+            border-left-width: 5px;
+            transform: translateX(5px);
+        }
+
+        .due-item-info {
+            flex: 1;
+        }
+
+        .due-item-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .overdue-badge {
+            padding: 0.15rem 0.5rem;
+            background: var(--accent-danger);
+            color: var(--bg-primary);
+            border-radius: 3px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .due-item-meta {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .due-item-link {
+            padding: 0.5rem 1rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--accent-secondary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+
+        .due-item-link:hover {
+            background: var(--accent-secondary);
+            color: var(--bg-primary);
+            border-color: var(--accent-secondary);
+        }
+
+        .problems-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-height: 70vh;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .problems-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .problems-list::-webkit-scrollbar-track {
+            background: var(--bg-tertiary);
+            border-radius: 3px;
+        }
+
+        .problems-list::-webkit-scrollbar-thumb {
+            background: var(--accent-primary);
+            border-radius: 3px;
+        }
+
+        .problem-item {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-left: 3px solid var(--accent-primary);
+            padding: 1.25rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+        }
+
+        .problem-item:hover {
+            border-left-width: 5px;
+            transform: translateX(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .problem-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 0.75rem;
+        }
+
+        .problem-number {
+            font-weight: 700;
+            color: var(--accent-secondary);
+            font-size: 1.1rem;
+        }
+
+        .problem-name {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .problem-badge {
+            padding: 0.25rem 0.75rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .problem-meta {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .problem-meta-item {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .problem-meta-item strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .problem-link {
+            display: inline-block;
+            margin-top: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 217, 255, 0.1));
+            border: 1px solid var(--accent-primary);
+            border-radius: 4px;
+            color: var(--accent-primary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+
+        .problem-link:hover {
+            background: var(--accent-primary);
+            color: var(--bg-primary);
+            transform: translateY(-2px);
+        }
+
+        .delete-btn {
+            padding: 0.4rem;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .delete-btn:hover {
+            background: var(--accent-danger);
+            border-color: var(--accent-danger);
+            color: var(--bg-primary);
+            transform: scale(1.1);
+        }
+
+        .delete-btn svg {
+            display: block;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .difficulty-badge {
+            padding: 0.15rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .difficulty-easy { background: rgba(0,255,136,0.15); color: var(--accent-primary); border: 1px solid rgba(0,255,136,0.3); }
+        .difficulty-medium { background: rgba(255,165,2,0.15); color: var(--accent-warning); border: 1px solid rgba(255,165,2,0.3); }
+        .difficulty-hard { background: rgba(255,71,87,0.15); color: var(--accent-danger); border: 1px solid rgba(255,71,87,0.3); }
+
+        .topic-badge {
+            padding: 0.15rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            background: rgba(0,217,255,0.1);
+            color: var(--accent-secondary);
+            border: 1px solid rgba(0,217,255,0.25);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .btn-small {
+            width: auto;
+            padding: 0.4rem 0.85rem;
+            font-size: 0.78rem;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+            transition: all 0.2s ease;
+            letter-spacing: 0.03em;
+            text-transform: none;
+        }
+        .btn-small:hover { transform: translateY(-1px); box-shadow: none; }
+        .btn-small:hover::before { display: none; }
+        .btn-small::before { display: none; }
+        .btn-revision { border-color: rgba(0,217,255,0.4); color: var(--accent-secondary); }
+        .btn-revision:hover { background: rgba(0,217,255,0.1); border-color: var(--accent-secondary); }
+
+        .btn-random {
+            background: linear-gradient(135deg, rgba(0,255,136,0.15), rgba(0,217,255,0.15));
+            border: 1px solid var(--accent-primary);
+            color: var(--accent-primary);
+            font-family: 'Space Mono', monospace;
+            font-weight: 700;
+            padding: 0.75rem 1.5rem;
+            width: auto;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .btn-random:hover { background: rgba(0,255,136,0.2); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,255,136,0.2); }
+        .btn-random::before { display: none; }
+
+        .btn-analyse {
+            background: linear-gradient(135deg, rgba(255,165,2,0.15), rgba(255,71,87,0.15));
+            border: 1px solid var(--accent-warning);
+            color: var(--accent-warning);
+            font-family: 'Space Mono', monospace;
+            font-weight: 700;
+            padding: 0.75rem 1.5rem;
+            width: auto;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .btn-analyse:hover { background: rgba(255,165,2,0.2); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255,165,2,0.2); }
+        .btn-analyse::before { display: none; }
+
+        .action-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 540px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        .modal-title {
+            font-family: 'Space Mono', monospace;
+            color: var(--accent-primary);
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+        }
+        .modal-close {
+            position: absolute;
+            top: 1rem; right: 1rem;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            border-radius: 4px;
+            padding: 0.25rem 0.6rem;
+            cursor: pointer;
+            font-size: 1rem;
+            width: auto;
+        }
+        .modal-close:hover { background: var(--accent-danger); color: white; border-color: var(--accent-danger); }
+        .modal-close::before { display: none; }
+
+        .random-problem-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--accent-primary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.25rem;
+        }
+        .random-problem-name { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem; }
+        .random-problem-meta { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+
+        .time-input-row { display: flex; gap: 1rem; align-items: flex-end; margin-top: 1rem; }
+        .time-input-row input { width: 120px; flex-shrink: 0; }
+
+        .analyse-item {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+        }
+        .analyse-item-name { font-weight: 600; color: var(--text-primary); margin-bottom: 0.4rem; }
+        .analyse-item-meta { font-size: 0.8rem; color: var(--text-secondary); }
+        .analyse-item-trend { font-size: 0.8rem; margin-top: 0.4rem; font-weight: 600; }
+        .trend-improve { color: var(--accent-danger); }
+        .trend-good { color: var(--accent-primary); }
+
+        .stat-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.25rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+            font-family: 'Space Mono', monospace;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 0.5rem;
+        }
+
+        /* ── Goal Tracker ─────────────────────────────────────── */
+        .goal-tracker {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .goal-tracker::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 2px;
+            background: linear-gradient(90deg, var(--accent-warning), var(--accent-danger));
+        }
+        .goal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+        .goal-title {
+            font-family: 'Space Mono', monospace;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--accent-warning);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .goal-stats {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .goal-stat {
+            text-align: center;
+        }
+        .goal-stat-value {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+        .goal-stat-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .goal-progress-bar {
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            height: 8px;
+            margin-bottom: 1.25rem;
+            overflow: hidden;
+        }
+        .goal-progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, var(--accent-warning), var(--accent-primary));
+            transition: width 0.5s ease;
+        }
+        .goal-grid-label {
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 0.6rem;
+        }
+        .goal-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3px;
+        }
+        .goal-day {
+            width: 22px;
+            height: 22px;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6rem;
+            font-weight: 700;
+            cursor: default;
+            transition: transform 0.15s ease;
+            position: relative;
+        }
+        .goal-day:hover { transform: scale(1.3); z-index: 10; }
+        .goal-day.day-future   { background: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border-color); }
+        .goal-day.day-empty    { background: rgba(255,71,87,0.15); color: var(--accent-danger); border: 1px solid rgba(255,71,87,0.3); }
+        .goal-day.day-under    { background: rgba(255,165,2,0.2); color: var(--accent-warning); border: 1px solid rgba(255,165,2,0.4); }
+        .goal-day.day-exact    { background: rgba(0,255,136,0.2); color: var(--accent-primary); border: 1px solid rgba(0,255,136,0.4); }
+        .goal-day.day-over     { background: rgba(0,217,255,0.2); color: var(--accent-secondary); border: 1px solid rgba(0,217,255,0.4); }
+        .goal-day.day-today    { outline: 2px solid var(--accent-warning); outline-offset: 1px; }
+        .goal-legend {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+        .legend-dot {
+            width: 10px; height: 10px;
+            border-radius: 2px;
+        }
+
+        input[type="text"], input[type="url"] {
+            width: 100%;
+            padding: 0.6rem 0.75rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            transition: border-color 0.2s ease;
+        }
+        input[type="text"]:focus, input[type="url"]:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+        input[type="date"] {
+            color-scheme: dark;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>DSA TRACKER</h1>
+            <p class="subtitle">Spaced Repetition System</p>
+            <div style="display:flex; gap:0.75rem; margin-top:0.75rem; flex-wrap:wrap; align-items:center; justify-content:center;">
+                <button class="btn-small" onclick="exportData()" style="background:var(--bg-tertiary);color:var(--text-secondary);border:1px solid var(--border-color);">⬇ Export Data</button>
+                <label class="btn-small" style="background:var(--bg-tertiary);color:var(--text-secondary);border:1px solid var(--border-color);cursor:pointer;">
+                    ⬆ Import Data<input type="file" id="importFile" accept=".json" style="display:none;" onchange="importData(event)">
+                </label>
+            </div>
+            <p id="storageIndicator" style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;"></p>
+        </header>
+
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-value" id="totalSolved">0</div>
+                <div class="stat-label">Total Solved</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="dueToday">0</div>
+                <div class="stat-label">Due Today</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="avgTime">0m</div>
+                <div class="stat-label">Avg Time</div>
+            </div>
+        </div>
+
+
+        <!-- Goal Tracker (populated by renderGoalTracker JS) -->
+        <div class="goal-tracker" id="goalTracker">
+            <div class="goal-header">
+                <div class="goal-title">🎯 Goal Tracker</div>
+                <button class="btn-small" onclick="openGoalSetup()" style="background:var(--accent-warning);color:#000;font-weight:700;">⚙ Set Up Goal</button>
+            </div>
+            <p style="color:var(--text-secondary);font-size:0.85rem;">Configure your goal list and deadline to start tracking your progress.</p>
+        </div>
+
+        <div class="main-grid">
+            <div>
+                <div class="card">
+                    <h2 class="card-title">Add Problem</h2>
+                    <!-- Tab toggle -->
+                    <div style="display:flex; gap:0; margin-bottom:1rem; border:1px solid var(--border-color); border-radius:8px; overflow:hidden;">
+                        <button id="tabStandard" onclick="switchFormTab('standard')" style="flex:1;padding:0.5rem;background:var(--accent-primary);color:#000;font-weight:700;font-size:0.8rem;border:none;cursor:pointer;font-family:inherit;">By Number</button>
+                        <button id="tabByName" onclick="switchFormTab('byname')" style="flex:1;padding:0.5rem;background:var(--bg-tertiary);color:var(--text-secondary);font-size:0.8rem;border:none;cursor:pointer;font-family:inherit;">By Name</button>
+                        <button id="tabCustom" onclick="switchFormTab('custom')" style="flex:1;padding:0.5rem;background:var(--bg-tertiary);color:var(--text-secondary);font-size:0.8rem;border:none;cursor:pointer;font-family:inherit;">Custom</button>
+                    </div>
+
+                    <!-- Standard form: by number -->
+                    <form id="problemForm" style="display:block;">
+                        <div class="form-group">
+                            <label for="listName">Problem List</label>
+                            <select id="listName" required onchange="onListChange()">
+                                <option value="">Select a list...</option>
+                                <option value="neetcode150">NeetCode 150</option>
+                                <option value="blind75">Blind 75</option>
+                                <option value="striver">Striver's SDE Sheet</option>
+                            </select>
+                        </div>
+                        <div class="input-row">
+                            <div class="form-group">
+                                <label for="problemNumber">Problem Number</label>
+                                <input type="number" id="problemNumber" required placeholder="e.g., 1–150" min="1">
+                            </div>
+                            <div class="form-group">
+                                <label for="timeTaken">Time (minutes)</label>
+                                <input type="number" id="timeTaken" required placeholder="30" min="0.1" step="0.1">
+                            </div>
+                        </div>
+                        <div id="problemPreview" style="font-size:0.8rem;color:var(--accent-secondary);margin-bottom:0.75rem;min-height:1.2rem;"></div>
+                        <button type="submit">Add Problem</button>
+                    </form>
+
+                    <!-- By Name form -->
+                    <form id="formByName" style="display:none;" onsubmit="submitByName(event)">
+                        <div class="form-group">
+                            <label for="listNameByName">Problem List</label>
+                            <select id="listNameByName" required onchange="onListChangeByName()">
+                                <option value="">Select a list...</option>
+                                <option value="neetcode150">NeetCode 150</option>
+                                <option value="blind75">Blind 75</option>
+                                <option value="striver">Striver's SDE Sheet</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="problemNameSearch">Search Problem Name</label>
+                            <input type="text" id="problemNameSearch" placeholder="e.g., Two Sum, Valid Palindrome..." oninput="searchProblems()" autocomplete="off">
+                            <div id="searchResults" style="max-height:180px;overflow-y:auto;border:1px solid var(--border-color);border-radius:6px;margin-top:0.25rem;display:none;background:var(--bg-secondary);"></div>
+                        </div>
+                        <div id="selectedProblemInfo" style="font-size:0.8rem;color:var(--accent-secondary);margin-bottom:0.5rem;"></div>
+                        <input type="hidden" id="selectedProblemNumber">
+                        <div class="form-group">
+                            <label for="timeTakenByName">Time (minutes)</label>
+                            <input type="number" id="timeTakenByName" required placeholder="30" min="0.1" step="0.1">
+                        </div>
+                        <button type="submit">Add Problem</button>
+                    </form>
+
+                    <!-- Custom problem form -->
+                    <form id="formCustom" style="display:none;" onsubmit="submitCustom(event)">
+                        <div class="input-row">
+                            <div class="form-group">
+                                <label for="customName">Problem Name *</label>
+                                <input type="text" id="customName" required placeholder="e.g., Two Sum">
+                            </div>
+                            <div class="form-group">
+                                <label for="customNumber">Problem # (optional)</label>
+                                <input type="number" id="customNumber" placeholder="e.g., 1">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="customLink">Link (LeetCode / HackerRank / etc.)</label>
+                            <input type="url" id="customLink" placeholder="https://leetcode.com/problems/...">
+                        </div>
+                        <div class="input-row">
+                            <div class="form-group">
+                                <label for="customDifficulty">Difficulty</label>
+                                <select id="customDifficulty">
+                                    <option value="Easy">Easy</option>
+                                    <option value="Medium" selected>Medium</option>
+                                    <option value="Hard">Hard</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="customTopic">Topic</label>
+                                <input type="text" id="customTopic" placeholder="e.g., Arrays, DP">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="customTime">Time (minutes) *</label>
+                            <input type="number" id="customTime" required placeholder="30" min="0.1" step="0.1">
+                        </div>
+                        <button type="submit">Add Custom Problem</button>
+                    </form>
+                </div>
+
+                <div id="dueTodaySection" class="due-today">
+                    <h3>⚡ Solve Today</h3>
+                    <div class="due-list" id="dueList">
+                        <div class="empty-state" style="padding: 1.5rem;">
+                            <p style="font-size: 0.9rem;">No problems due for revision today. Keep solving new problems!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title">Your Progress</h2>
+                <div class="action-bar">
+                    <button class="btn-random" onclick="openRandomModal()">🎲 Random Revision</button>
+                    <button class="btn-analyse" onclick="openAnalyseModal()">📊 Analyse</button>
+                </div>
+                <div class="problems-list" id="problemsList">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📊</div>
+                        <p>No problems tracked yet. Start by adding your first problem!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Goal Setup Modal -->
+    <div class="modal-overlay" id="goalSetupModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal('goalSetupModal')">✕</button>
+            <div class="modal-title">🎯 Set Up Goal Tracker</div>
+            <div style="margin-bottom:1rem;">
+                <label style="display:block;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.4rem;text-transform:uppercase;letter-spacing:0.05em;">Track which list?</label>
+                <select id="goalListSelect" style="width:100%;padding:0.6rem;background:var(--bg-tertiary);color:var(--text-primary);border:1px solid var(--border-color);border-radius:6px;font-family:inherit;font-size:0.9rem;">
+                    <option value="neetcode150">NeetCode 150 (150 problems)</option>
+                    <option value="blind75">Blind 75 (75 problems)</option>
+                    <option value="striver">Striver's SDE Sheet (191 problems)</option>
+                </select>
+            </div>
+            <div style="margin-bottom:1.25rem;">
+                <label style="display:block;font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.4rem;text-transform:uppercase;letter-spacing:0.05em;">Target completion date</label>
+                <input type="date" id="goalDateInput" style="width:100%;padding:0.6rem;background:var(--bg-tertiary);color:var(--text-primary);border:1px solid var(--border-color);border-radius:6px;font-family:inherit;font-size:0.9rem;">
+            </div>
+            <button onclick="saveGoalSetup()" style="width:100%;padding:0.75rem;background:var(--accent-warning);color:#000;font-weight:700;border:none;border-radius:8px;cursor:pointer;font-family:inherit;font-size:0.9rem;">Save Goal</button>
+        </div>
+    </div>
+
+    <!-- Random Revision Modal -->
+    <div class="modal-overlay" id="randomModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal('randomModal')">✕</button>
+            <div class="modal-title">🎲 Random Revision</div>
+            <div id="randomModalContent"></div>
+        </div>
+    </div>
+
+    <!-- Analyse Modal -->
+    <div class="modal-overlay" id="analyseModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal('analyseModal')">✕</button>
+            <div class="modal-title">📊 Time Analysis</div>
+            <div id="analyseModalContent"></div>
+        </div>
+    </div>
+
+    <!-- Manual Revision Modal -->
+    <div class="modal-overlay" id="manualRevisionModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal('manualRevisionModal')">✕</button>
+            <div class="modal-title">📝 Log Manual Revision</div>
+            <div id="manualRevisionContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // Complete NeetCode 150 mapping - correct category order with topic + difficulty
+        const NEETCODE_150_PROBLEMS = {
+          // Arrays & Hashing
+          1:{name:"Contains Duplicate",slug:"duplicate-integer",topic:"Arrays & Hashing",difficulty:"Easy"},
+          2:{name:"Valid Anagram",slug:"is-anagram",topic:"Arrays & Hashing",difficulty:"Easy"},
+          3:{name:"Two Sum",slug:"two-integer-sum",topic:"Arrays & Hashing",difficulty:"Easy"},
+          4:{name:"Group Anagrams",slug:"anagram-groups",topic:"Arrays & Hashing",difficulty:"Medium"},
+          5:{name:"Top K Frequent Elements",slug:"top-k-elements-in-list",topic:"Arrays & Hashing",difficulty:"Medium"},
+          6:{name:"Encode and Decode Strings",slug:"string-encode-and-decode",topic:"Arrays & Hashing",difficulty:"Medium"},
+          7:{name:"Product of Array Except Self",slug:"products-of-array-discluding-self",topic:"Arrays & Hashing",difficulty:"Medium"},
+          8:{name:"Valid Sudoku",slug:"valid-sudoku",topic:"Arrays & Hashing",difficulty:"Medium"},
+          9:{name:"Longest Consecutive Sequence",slug:"longest-consecutive-sequence",topic:"Arrays & Hashing",difficulty:"Medium"},
+          // Two Pointers
+          10:{name:"Valid Palindrome",slug:"is-palindrome",topic:"Two Pointers",difficulty:"Easy"},
+          11:{name:"Two Sum II",slug:"two-integer-sum-ii",topic:"Two Pointers",difficulty:"Medium"},
+          12:{name:"3Sum",slug:"three-integer-sum",topic:"Two Pointers",difficulty:"Medium"},
+          13:{name:"Container With Most Water",slug:"max-water-container",topic:"Two Pointers",difficulty:"Medium"},
+          14:{name:"Trapping Rain Water",slug:"trapping-rain-water",topic:"Two Pointers",difficulty:"Hard"},
+          // Stack
+          15:{name:"Valid Parentheses",slug:"validate-parentheses",topic:"Stack",difficulty:"Easy"},
+          16:{name:"Min Stack",slug:"minimum-stack",topic:"Stack",difficulty:"Medium"},
+          17:{name:"Evaluate Reverse Polish Notation",slug:"evaluate-reverse-polish-notation",topic:"Stack",difficulty:"Medium"},
+          18:{name:"Generate Parentheses",slug:"generate-parentheses",topic:"Stack",difficulty:"Medium"},
+          19:{name:"Daily Temperatures",slug:"daily-temperatures",topic:"Stack",difficulty:"Medium"},
+          20:{name:"Car Fleet",slug:"car-fleet",topic:"Stack",difficulty:"Medium"},
+          21:{name:"Largest Rectangle In Histogram",slug:"largest-rectangle-in-histogram",topic:"Stack",difficulty:"Hard"},
+          // Binary Search
+          22:{name:"Binary Search",slug:"binary-search",topic:"Binary Search",difficulty:"Easy"},
+          23:{name:"Search a 2D Matrix",slug:"search-2d-matrix",topic:"Binary Search",difficulty:"Medium"},
+          24:{name:"Koko Eating Bananas",slug:"eating-bananas",topic:"Binary Search",difficulty:"Medium"},
+          25:{name:"Find Minimum In Rotated Sorted Array",slug:"find-minimum-in-rotated-sorted-array",topic:"Binary Search",difficulty:"Medium"},
+          26:{name:"Search In Rotated Sorted Array",slug:"search-in-rotated-sorted-array",topic:"Binary Search",difficulty:"Medium"},
+          27:{name:"Time Based Key-Value Store",slug:"time-based-key-value-store",topic:"Binary Search",difficulty:"Medium"},
+          28:{name:"Median of Two Sorted Arrays",slug:"median-of-two-sorted-arrays",topic:"Binary Search",difficulty:"Hard"},
+          // Sliding Window
+          29:{name:"Best Time to Buy and Sell Stock",slug:"buy-and-sell-crypto",topic:"Sliding Window",difficulty:"Easy"},
+          30:{name:"Longest Substring Without Repeating Characters",slug:"longest-substring-without-duplicates",topic:"Sliding Window",difficulty:"Medium"},
+          31:{name:"Longest Repeating Character Replacement",slug:"longest-repeating-substring-with-replacement",topic:"Sliding Window",difficulty:"Medium"},
+          32:{name:"Permutation In String",slug:"permutation-string",topic:"Sliding Window",difficulty:"Medium"},
+          33:{name:"Minimum Window Substring",slug:"minimum-window-with-characters",topic:"Sliding Window",difficulty:"Hard"},
+          34:{name:"Sliding Window Maximum",slug:"sliding-window-maximum",topic:"Sliding Window",difficulty:"Hard"},
+          // Linked List
+          35:{name:"Reverse Linked List",slug:"reverse-a-linked-list",topic:"Linked List",difficulty:"Easy"},
+          36:{name:"Merge Two Sorted Lists",slug:"merge-two-sorted-linked-lists",topic:"Linked List",difficulty:"Easy"},
+          37:{name:"Reorder List",slug:"reorder-linked-list",topic:"Linked List",difficulty:"Medium"},
+          38:{name:"Remove Nth Node From End of List",slug:"remove-node-from-end-of-linked-list",topic:"Linked List",difficulty:"Medium"},
+          39:{name:"Copy List With Random Pointer",slug:"copy-linked-list-with-random-pointer",topic:"Linked List",difficulty:"Medium"},
+          40:{name:"Add Two Numbers",slug:"add-two-numbers",topic:"Linked List",difficulty:"Medium"},
+          41:{name:"Linked List Cycle",slug:"linked-list-cycle-detection",topic:"Linked List",difficulty:"Easy"},
+          42:{name:"Find The Duplicate Number",slug:"find-duplicate-integer",topic:"Linked List",difficulty:"Medium"},
+          43:{name:"LRU Cache",slug:"lru-cache",topic:"Linked List",difficulty:"Medium"},
+          44:{name:"Merge K Sorted Lists",slug:"merge-k-sorted-linked-lists",topic:"Linked List",difficulty:"Hard"},
+          45:{name:"Reverse Nodes in K-Group",slug:"reverse-nodes-in-k-group",topic:"Linked List",difficulty:"Hard"},
+          // Trees
+          46:{name:"Invert Binary Tree",slug:"invert-a-binary-tree",topic:"Trees",difficulty:"Easy"},
+          47:{name:"Maximum Depth of Binary Tree",slug:"depth-of-binary-tree",topic:"Trees",difficulty:"Easy"},
+          48:{name:"Diameter of Binary Tree",slug:"binary-tree-diameter",topic:"Trees",difficulty:"Easy"},
+          49:{name:"Balanced Binary Tree",slug:"balanced-binary-tree",topic:"Trees",difficulty:"Easy"},
+          50:{name:"Same Tree",slug:"same-binary-tree",topic:"Trees",difficulty:"Easy"},
+          51:{name:"Subtree of Another Tree",slug:"subtree-of-a-binary-tree",topic:"Trees",difficulty:"Easy"},
+          52:{name:"Lowest Common Ancestor of a BST",slug:"lowest-common-ancestor-in-binary-search-tree",topic:"Trees",difficulty:"Medium"},
+          53:{name:"Binary Tree Level Order Traversal",slug:"level-order-traversal-of-binary-tree",topic:"Trees",difficulty:"Medium"},
+          54:{name:"Binary Tree Right Side View",slug:"binary-tree-right-side-view",topic:"Trees",difficulty:"Medium"},
+          55:{name:"Count Good Nodes In Binary Tree",slug:"count-good-nodes-in-binary-tree",topic:"Trees",difficulty:"Medium"},
+          56:{name:"Validate Binary Search Tree",slug:"valid-binary-search-tree",topic:"Trees",difficulty:"Medium"},
+          57:{name:"Kth Smallest Element In a BST",slug:"kth-smallest-integer-in-bst",topic:"Trees",difficulty:"Medium"},
+          58:{name:"Construct Binary Tree from Preorder and Inorder",slug:"binary-tree-from-preorder-and-inorder-traversal",topic:"Trees",difficulty:"Medium"},
+          59:{name:"Binary Tree Maximum Path Sum",slug:"binary-tree-maximum-path-sum",topic:"Trees",difficulty:"Hard"},
+          60:{name:"Serialize and Deserialize Binary Tree",slug:"serialize-and-deserialize-binary-tree",topic:"Trees",difficulty:"Hard"},
+          // Tries
+          61:{name:"Implement Trie",slug:"implement-prefix-tree",topic:"Tries",difficulty:"Medium"},
+          62:{name:"Design Add and Search Words Data Structure",slug:"design-word-search-data-structure",topic:"Tries",difficulty:"Medium"},
+          63:{name:"Word Search II",slug:"search-for-word-ii",topic:"Tries",difficulty:"Hard"},
+          // Backtracking
+          64:{name:"Subsets",slug:"subsets",topic:"Backtracking",difficulty:"Medium"},
+          65:{name:"Combination Sum",slug:"combination-target-sum",topic:"Backtracking",difficulty:"Medium"},
+          66:{name:"Permutations",slug:"permutations",topic:"Backtracking",difficulty:"Medium"},
+          67:{name:"Subsets II",slug:"subsets-ii",topic:"Backtracking",difficulty:"Medium"},
+          68:{name:"Combination Sum II",slug:"combination-target-sum-ii",topic:"Backtracking",difficulty:"Medium"},
+          69:{name:"Word Search",slug:"search-for-word",topic:"Backtracking",difficulty:"Medium"},
+          70:{name:"Palindrome Partitioning",slug:"palindrome-partitioning",topic:"Backtracking",difficulty:"Medium"},
+          71:{name:"Letter Combinations of a Phone Number",slug:"combinations-of-a-phone-number",topic:"Backtracking",difficulty:"Medium"},
+          72:{name:"N-Queens",slug:"n-queens",topic:"Backtracking",difficulty:"Hard"},
+          // Heap / Priority Queue
+          73:{name:"Kth Largest Element In a Stream",slug:"kth-largest-integer-in-a-stream",topic:"Heap / Priority Queue",difficulty:"Easy"},
+          74:{name:"Last Stone Weight",slug:"last-stone-weight",topic:"Heap / Priority Queue",difficulty:"Easy"},
+          75:{name:"K Closest Points to Origin",slug:"k-closest-points-to-origin",topic:"Heap / Priority Queue",difficulty:"Medium"},
+          76:{name:"Kth Largest Element In An Array",slug:"kth-largest-element-in-an-array",topic:"Heap / Priority Queue",difficulty:"Medium"},
+          77:{name:"Task Scheduler",slug:"task-scheduling",topic:"Heap / Priority Queue",difficulty:"Medium"},
+          78:{name:"Design Twitter",slug:"design-twitter-feed",topic:"Heap / Priority Queue",difficulty:"Medium"},
+          79:{name:"Find Median From Data Stream",slug:"find-median-in-a-data-stream",topic:"Heap / Priority Queue",difficulty:"Hard"},
+          // Graphs
+          80:{name:"Number of Islands",slug:"count-number-of-islands",topic:"Graphs",difficulty:"Medium"},
+          81:{name:"Clone Graph",slug:"clone-graph",topic:"Graphs",difficulty:"Medium"},
+          82:{name:"Max Area of Island",slug:"max-area-of-island",topic:"Graphs",difficulty:"Medium"},
+          83:{name:"Pacific Atlantic Water Flow",slug:"pacific-atlantic-water-flow",topic:"Graphs",difficulty:"Medium"},
+          84:{name:"Surrounded Regions",slug:"surrounded-regions",topic:"Graphs",difficulty:"Medium"},
+          85:{name:"Rotting Oranges",slug:"rotting-fruit",topic:"Graphs",difficulty:"Medium"},
+          86:{name:"Walls And Gates",slug:"islands-and-treasure",topic:"Graphs",difficulty:"Medium"},
+          87:{name:"Course Schedule",slug:"course-schedule",topic:"Graphs",difficulty:"Medium"},
+          88:{name:"Course Schedule II",slug:"course-schedule-ii",topic:"Graphs",difficulty:"Medium"},
+          89:{name:"Redundant Connection",slug:"redundant-connection",topic:"Graphs",difficulty:"Medium"},
+          90:{name:"Number of Connected Components In An Undirected Graph",slug:"count-connected-components",topic:"Graphs",difficulty:"Medium"},
+          91:{name:"Graph Valid Tree",slug:"valid-tree",topic:"Graphs",difficulty:"Medium"},
+          92:{name:"Word Ladder",slug:"word-ladder",topic:"Graphs",difficulty:"Hard"},
+          // 1D DP
+          93:{name:"Climbing Stairs",slug:"climbing-stairs",topic:"1D DP",difficulty:"Easy"},
+          94:{name:"Min Cost Climbing Stairs",slug:"min-cost-climbing-stairs",topic:"1D DP",difficulty:"Easy"},
+          95:{name:"House Robber",slug:"house-robber",topic:"1D DP",difficulty:"Medium"},
+          96:{name:"House Robber II",slug:"house-robber-ii",topic:"1D DP",difficulty:"Medium"},
+          97:{name:"Longest Palindromic Substring",slug:"longest-palindromic-substring",topic:"1D DP",difficulty:"Medium"},
+          98:{name:"Palindromic Substrings",slug:"palindromic-substrings",topic:"1D DP",difficulty:"Medium"},
+          99:{name:"Decode Ways",slug:"decode-ways",topic:"1D DP",difficulty:"Medium"},
+          100:{name:"Coin Change",slug:"coin-change",topic:"1D DP",difficulty:"Medium"},
+          101:{name:"Maximum Product Subarray",slug:"maximum-product-subarray",topic:"1D DP",difficulty:"Medium"},
+          102:{name:"Word Break",slug:"word-break",topic:"1D DP",difficulty:"Medium"},
+          103:{name:"Longest Increasing Subsequence",slug:"longest-increasing-subsequence",topic:"1D DP",difficulty:"Medium"},
+          104:{name:"Partition Equal Subset Sum",slug:"partition-equal-subset-sum",topic:"1D DP",difficulty:"Medium"},
+          105:{name:"Maximum Subarray",slug:"maximum-subarray",topic:"1D DP",difficulty:"Medium"},
+          106:{name:"Jump Game",slug:"jump-game",topic:"1D DP",difficulty:"Medium"},
+          // Intervals
+          107:{name:"Insert Interval",slug:"insert-new-interval",topic:"Intervals",difficulty:"Medium"},
+          108:{name:"Merge Intervals",slug:"merge-intervals",topic:"Intervals",difficulty:"Medium"},
+          109:{name:"Non-overlapping Intervals",slug:"non-overlapping-intervals",topic:"Intervals",difficulty:"Medium"},
+          110:{name:"Meeting Rooms",slug:"meeting-schedule",topic:"Intervals",difficulty:"Easy"},
+          111:{name:"Meeting Rooms II",slug:"meeting-schedule-ii",topic:"Intervals",difficulty:"Medium"},
+          112:{name:"Minimum Interval to Include Each Query",slug:"minimum-interval-including-query",topic:"Intervals",difficulty:"Hard"},
+          // Greedy
+          113:{name:"Jump Game II",slug:"jump-game-ii",topic:"Greedy",difficulty:"Medium"},
+          114:{name:"Gas Station",slug:"gas-station",topic:"Greedy",difficulty:"Medium"},
+          115:{name:"Hand of Straights",slug:"hand-of-straights",topic:"Greedy",difficulty:"Medium"},
+          116:{name:"Merge Triplets to Form Target Triplet",slug:"merge-triplets",topic:"Greedy",difficulty:"Medium"},
+          117:{name:"Partition Labels",slug:"partition-labels",topic:"Greedy",difficulty:"Medium"},
+          118:{name:"Valid Parenthesis String",slug:"valid-parenthesis-string",topic:"Greedy",difficulty:"Medium"},
+          // Advanced Graphs
+          119:{name:"Reconstruct Itinerary",slug:"reconstruct-flight-path",topic:"Advanced Graphs",difficulty:"Hard"},
+          120:{name:"Min Cost to Connect All Points",slug:"min-cost-to-connect-points",topic:"Advanced Graphs",difficulty:"Medium"},
+          121:{name:"Network Delay Time",slug:"network-delay-time",topic:"Advanced Graphs",difficulty:"Medium"},
+          122:{name:"Swim In Rising Water",slug:"swim-in-rising-water",topic:"Advanced Graphs",difficulty:"Hard"},
+          123:{name:"Alien Dictionary",slug:"foreign-dictionary",topic:"Advanced Graphs",difficulty:"Hard"},
+          124:{name:"Cheapest Flights Within K Stops",slug:"cheapest-flight-path",topic:"Advanced Graphs",difficulty:"Medium"},
+          // 2D DP
+          125:{name:"Unique Paths",slug:"count-paths",topic:"2D DP",difficulty:"Medium"},
+          126:{name:"Longest Common Subsequence",slug:"longest-common-subsequence",topic:"2D DP",difficulty:"Medium"},
+          127:{name:"Best Time to Buy/Sell Stock With Cooldown",slug:"buy-and-sell-crypto-with-cooldown",topic:"2D DP",difficulty:"Medium"},
+          128:{name:"Coin Change II",slug:"coin-change-ii",topic:"2D DP",difficulty:"Medium"},
+          129:{name:"Target Sum",slug:"target-sum",topic:"2D DP",difficulty:"Medium"},
+          130:{name:"Interleaving String",slug:"interleaving-strings",topic:"2D DP",difficulty:"Hard"},
+          131:{name:"Longest Increasing Path In a Matrix",slug:"longest-increasing-path-in-matrix",topic:"2D DP",difficulty:"Hard"},
+          132:{name:"Distinct Subsequences",slug:"count-distinct-subsequences",topic:"2D DP",difficulty:"Hard"},
+          133:{name:"Edit Distance",slug:"edit-distance",topic:"2D DP",difficulty:"Hard"},
+          134:{name:"Burst Balloons",slug:"burst-balloons",topic:"2D DP",difficulty:"Hard"},
+          135:{name:"Regular Expression Matching",slug:"regular-expression-matching",topic:"2D DP",difficulty:"Hard"},
+          // Bit Manipulation
+          136:{name:"Single Number",slug:"single-number",topic:"Bit Manipulation",difficulty:"Easy"},
+          137:{name:"Number of 1 Bits",slug:"number-of-one-bits",topic:"Bit Manipulation",difficulty:"Easy"},
+          138:{name:"Counting Bits",slug:"counting-bits",topic:"Bit Manipulation",difficulty:"Easy"},
+          139:{name:"Reverse Bits",slug:"reverse-bits",topic:"Bit Manipulation",difficulty:"Easy"},
+          140:{name:"Missing Number",slug:"missing-number",topic:"Bit Manipulation",difficulty:"Easy"},
+          141:{name:"Sum of Two Integers",slug:"sum-of-two-integers",topic:"Bit Manipulation",difficulty:"Medium"},
+          142:{name:"Reverse Integer",slug:"reverse-integer",topic:"Bit Manipulation",difficulty:"Medium"},
+          // Math & Geometry
+          143:{name:"Rotate Image",slug:"rotate-matrix",topic:"Math & Geometry",difficulty:"Medium"},
+          144:{name:"Spiral Matrix",slug:"spiral-matrix",topic:"Math & Geometry",difficulty:"Medium"},
+          145:{name:"Set Matrix Zeroes",slug:"set-zeroes-in-matrix",topic:"Math & Geometry",difficulty:"Medium"},
+          146:{name:"Happy Number",slug:"happy-number",topic:"Math & Geometry",difficulty:"Easy"},
+          147:{name:"Plus One",slug:"plus-one",topic:"Math & Geometry",difficulty:"Easy"},
+          148:{name:"Pow(x, n)",slug:"pow-x-n",topic:"Math & Geometry",difficulty:"Medium"},
+          149:{name:"Multiply Strings",slug:"multiply-strings",topic:"Math & Geometry",difficulty:"Medium"},
+          150:{name:"Detect Squares",slug:"detect-squares",topic:"Math & Geometry",difficulty:"Medium"},
+        };
+
+        // Blind 75 in exact NeetCode Blind75 order (neetcode.io/blind75)
+        const BLIND_75_PROBLEMS = {
+            // Arrays & Hashing
+            1:{name:"Contains Duplicate",slug:"duplicate-integer",topic:"Arrays & Hashing",difficulty:"Easy"},
+            2:{name:"Valid Anagram",slug:"is-anagram",topic:"Arrays & Hashing",difficulty:"Easy"},
+            3:{name:"Two Sum",slug:"two-integer-sum",topic:"Arrays & Hashing",difficulty:"Easy"},
+            4:{name:"Group Anagrams",slug:"anagram-groups",topic:"Arrays & Hashing",difficulty:"Medium"},
+            5:{name:"Top K Frequent Elements",slug:"top-k-elements-in-list",topic:"Arrays & Hashing",difficulty:"Medium"},
+            6:{name:"Encode and Decode Strings",slug:"string-encode-and-decode",topic:"Arrays & Hashing",difficulty:"Medium"},
+            7:{name:"Product of Array Except Self",slug:"products-of-array-discluding-self",topic:"Arrays & Hashing",difficulty:"Medium"},
+            8:{name:"Longest Consecutive Sequence",slug:"longest-consecutive-sequence",topic:"Arrays & Hashing",difficulty:"Medium"},
+            // Two Pointers
+            9:{name:"Valid Palindrome",slug:"is-palindrome",topic:"Two Pointers",difficulty:"Easy"},
+            10:{name:"3Sum",slug:"three-integer-sum",topic:"Two Pointers",difficulty:"Medium"},
+            11:{name:"Container With Most Water",slug:"max-water-container",topic:"Two Pointers",difficulty:"Medium"},
+            // Sliding Window
+            12:{name:"Best Time to Buy and Sell Stock",slug:"buy-and-sell-crypto",topic:"Sliding Window",difficulty:"Easy"},
+            13:{name:"Longest Substring Without Repeating Characters",slug:"longest-substring-without-duplicates",topic:"Sliding Window",difficulty:"Medium"},
+            14:{name:"Longest Repeating Character Replacement",slug:"longest-repeating-substring-with-replacement",topic:"Sliding Window",difficulty:"Medium"},
+            15:{name:"Minimum Window Substring",slug:"minimum-window-with-characters",topic:"Sliding Window",difficulty:"Hard"},
+            // Stack
+            16:{name:"Valid Parentheses",slug:"validate-parentheses",topic:"Stack",difficulty:"Easy"},
+            // Binary Search
+            17:{name:"Find Minimum in Rotated Sorted Array",slug:"find-minimum-in-rotated-sorted-array",topic:"Binary Search",difficulty:"Medium"},
+            18:{name:"Search in Rotated Sorted Array",slug:"search-in-rotated-sorted-array",topic:"Binary Search",difficulty:"Medium"},
+            // Linked List
+            19:{name:"Reverse Linked List",slug:"reverse-a-linked-list",topic:"Linked List",difficulty:"Easy"},
+            20:{name:"Merge Two Sorted Lists",slug:"merge-two-sorted-linked-lists",topic:"Linked List",difficulty:"Easy"},
+            21:{name:"Reorder List",slug:"reorder-linked-list",topic:"Linked List",difficulty:"Medium"},
+            22:{name:"Remove Nth Node From End of List",slug:"remove-node-from-end-of-linked-list",topic:"Linked List",difficulty:"Medium"},
+            23:{name:"Linked List Cycle",slug:"linked-list-cycle-detection",topic:"Linked List",difficulty:"Easy"},
+            24:{name:"Merge K Sorted Lists",slug:"merge-k-sorted-linked-lists",topic:"Linked List",difficulty:"Hard"},
+            // Trees
+            25:{name:"Invert Binary Tree",slug:"invert-a-binary-tree",topic:"Trees",difficulty:"Easy"},
+            26:{name:"Maximum Depth of Binary Tree",slug:"depth-of-binary-tree",topic:"Trees",difficulty:"Easy"},
+            27:{name:"Same Tree",slug:"same-binary-tree",topic:"Trees",difficulty:"Easy"},
+            28:{name:"Subtree of Another Tree",slug:"subtree-of-a-binary-tree",topic:"Trees",difficulty:"Easy"},
+            29:{name:"Lowest Common Ancestor of BST",slug:"lowest-common-ancestor-in-binary-search-tree",topic:"Trees",difficulty:"Medium"},
+            30:{name:"Binary Tree Level Order Traversal",slug:"level-order-traversal-of-binary-tree",topic:"Trees",difficulty:"Medium"},
+            31:{name:"Validate Binary Search Tree",slug:"valid-binary-search-tree",topic:"Trees",difficulty:"Medium"},
+            32:{name:"Kth Smallest Element in BST",slug:"kth-smallest-integer-in-bst",topic:"Trees",difficulty:"Medium"},
+            33:{name:"Construct Binary Tree from Preorder and Inorder",slug:"binary-tree-from-preorder-and-inorder-traversal",topic:"Trees",difficulty:"Medium"},
+            34:{name:"Binary Tree Maximum Path Sum",slug:"binary-tree-maximum-path-sum",topic:"Trees",difficulty:"Hard"},
+            35:{name:"Serialize and Deserialize Binary Tree",slug:"serialize-and-deserialize-binary-tree",topic:"Trees",difficulty:"Hard"},
+            // Tries
+            36:{name:"Implement Trie",slug:"implement-prefix-tree",topic:"Tries",difficulty:"Medium"},
+            37:{name:"Design Add and Search Words",slug:"design-word-search-data-structure",topic:"Tries",difficulty:"Medium"},
+            38:{name:"Word Search II",slug:"search-for-word-ii",topic:"Tries",difficulty:"Hard"},
+            // Heap / Priority Queue
+            39:{name:"Find Median From Data Stream",slug:"find-median-in-a-data-stream",topic:"Heap / Priority Queue",difficulty:"Hard"},
+            // Backtracking
+            40:{name:"Combination Sum",slug:"combination-target-sum",topic:"Backtracking",difficulty:"Medium"},
+            41:{name:"Word Search",slug:"search-for-word",topic:"Backtracking",difficulty:"Medium"},
+            // Graphs
+            42:{name:"Number of Islands",slug:"count-number-of-islands",topic:"Graphs",difficulty:"Medium"},
+            43:{name:"Clone Graph",slug:"clone-graph",topic:"Graphs",difficulty:"Medium"},
+            44:{name:"Pacific Atlantic Water Flow",slug:"pacific-atlantic-water-flow",topic:"Graphs",difficulty:"Medium"},
+            45:{name:"Course Schedule",slug:"course-schedule",topic:"Graphs",difficulty:"Medium"},
+            46:{name:"Number of Connected Components",slug:"count-connected-components",topic:"Graphs",difficulty:"Medium"},
+            47:{name:"Graph Valid Tree",slug:"valid-tree",topic:"Graphs",difficulty:"Medium"},
+            // Advanced Graphs
+            48:{name:"Alien Dictionary",slug:"foreign-dictionary",topic:"Advanced Graphs",difficulty:"Hard"},
+            // 1D DP
+            49:{name:"Climbing Stairs",slug:"climbing-stairs",topic:"1D DP",difficulty:"Easy"},
+            50:{name:"House Robber",slug:"house-robber",topic:"1D DP",difficulty:"Medium"},
+            51:{name:"House Robber II",slug:"house-robber-ii",topic:"1D DP",difficulty:"Medium"},
+            52:{name:"Longest Palindromic Substring",slug:"longest-palindromic-substring",topic:"1D DP",difficulty:"Medium"},
+            53:{name:"Palindromic Substrings",slug:"palindromic-substrings",topic:"1D DP",difficulty:"Medium"},
+            54:{name:"Decode Ways",slug:"decode-ways",topic:"1D DP",difficulty:"Medium"},
+            55:{name:"Coin Change",slug:"coin-change",topic:"1D DP",difficulty:"Medium"},
+            56:{name:"Maximum Product Subarray",slug:"maximum-product-subarray",topic:"1D DP",difficulty:"Medium"},
+            57:{name:"Word Break",slug:"word-break",topic:"1D DP",difficulty:"Medium"},
+            58:{name:"Longest Increasing Subsequence",slug:"longest-increasing-subsequence",topic:"1D DP",difficulty:"Medium"},
+            // 2D DP
+            59:{name:"Unique Paths",slug:"count-paths",topic:"2D DP",difficulty:"Medium"},
+            60:{name:"Longest Common Subsequence",slug:"longest-common-subsequence",topic:"2D DP",difficulty:"Medium"},
+            // Greedy
+            61:{name:"Maximum Subarray",slug:"maximum-subarray",topic:"Greedy",difficulty:"Medium"},
+            62:{name:"Jump Game",slug:"jump-game",topic:"Greedy",difficulty:"Medium"},
+            // Intervals
+            63:{name:"Insert Interval",slug:"insert-new-interval",topic:"Intervals",difficulty:"Medium"},
+            64:{name:"Merge Intervals",slug:"merge-intervals",topic:"Intervals",difficulty:"Medium"},
+            65:{name:"Non-overlapping Intervals",slug:"non-overlapping-intervals",topic:"Intervals",difficulty:"Medium"},
+            66:{name:"Meeting Rooms",slug:"meeting-schedule",topic:"Intervals",difficulty:"Easy"},
+            67:{name:"Meeting Rooms II",slug:"meeting-schedule-ii",topic:"Intervals",difficulty:"Medium"},
+            // Math & Geometry
+            68:{name:"Rotate Image",slug:"rotate-matrix",topic:"Math & Geometry",difficulty:"Medium"},
+            69:{name:"Spiral Matrix",slug:"spiral-matrix",topic:"Math & Geometry",difficulty:"Medium"},
+            70:{name:"Set Matrix Zeroes",slug:"set-zeroes-in-matrix",topic:"Math & Geometry",difficulty:"Medium"},
+            // Bit Manipulation
+            71:{name:"Single Number",slug:"single-number",topic:"Bit Manipulation",difficulty:"Easy"},
+            72:{name:"Number of 1 Bits",slug:"number-of-one-bits",topic:"Bit Manipulation",difficulty:"Easy"},
+            73:{name:"Counting Bits",slug:"counting-bits",topic:"Bit Manipulation",difficulty:"Easy"},
+            74:{name:"Reverse Bits",slug:"reverse-bits",topic:"Bit Manipulation",difficulty:"Easy"},
+            75:{name:"Missing Number",slug:"missing-number",topic:"Bit Manipulation",difficulty:"Easy"},
+        };
+
+        // Striver's SDE Sheet in exact TakeUForward order (takeuforward.org/sde-sheet)
+        // 30 days × 6 problems = 180 core + extras = 191 total
+        const STRIVER_PROBLEMS = {
+            // Day 1: Arrays
+            1:{name:"Set Matrix Zeroes",slug:"set-matrix-zeroes",topic:"Arrays",difficulty:"Medium",leetcode:73},
+            2:{name:"Pascal's Triangle",slug:"pascals-triangle",topic:"Arrays",difficulty:"Easy",leetcode:118},
+            3:{name:"Next Permutation",slug:"next-permutation",topic:"Arrays",difficulty:"Medium",leetcode:31},
+            4:{name:"Kadane's Algorithm / Maximum Subarray",slug:"maximum-subarray",topic:"Arrays",difficulty:"Medium",leetcode:53},
+            5:{name:"Sort an Array of 0s 1s 2s",slug:"sort-colors",topic:"Arrays",difficulty:"Medium",leetcode:75},
+            6:{name:"Best Time to Buy and Sell Stock",slug:"best-time-to-buy-and-sell-stock",topic:"Arrays",difficulty:"Easy",leetcode:121},
+            // Day 2: Arrays Part II
+            7:{name:"Rotate Matrix",slug:"rotate-image",topic:"Arrays",difficulty:"Medium",leetcode:48},
+            8:{name:"Merge Overlapping Subintervals",slug:"merge-intervals",topic:"Arrays",difficulty:"Medium",leetcode:56},
+            9:{name:"Merge Two Sorted Arrays Without Extra Space",slug:"merge-sorted-array",topic:"Arrays",difficulty:"Medium",leetcode:88},
+            10:{name:"Find the Duplicate Number",slug:"find-the-duplicate-number",topic:"Arrays",difficulty:"Medium",leetcode:287},
+            11:{name:"Repeat and Missing Number",slug:"missing-number",topic:"Arrays",difficulty:"Easy",leetcode:268},
+            12:{name:"Count Inversions",slug:"reverse-pairs",topic:"Arrays",difficulty:"Hard",leetcode:493},
+            // Day 3: Arrays Part III
+            13:{name:"Search in 2D Matrix",slug:"search-a-2d-matrix",topic:"Arrays",difficulty:"Medium",leetcode:74},
+            14:{name:"Pow(x,n)",slug:"powx-n",topic:"Arrays",difficulty:"Medium",leetcode:50},
+            15:{name:"Majority Element (n/2 times)",slug:"majority-element",topic:"Arrays",difficulty:"Easy",leetcode:169},
+            16:{name:"Majority Element (n/3 times)",slug:"majority-element-ii",topic:"Arrays",difficulty:"Medium",leetcode:229},
+            17:{name:"Grid Unique Paths",slug:"unique-paths",topic:"Arrays",difficulty:"Medium",leetcode:62},
+            18:{name:"Reverse Pairs",slug:"reverse-pairs",topic:"Arrays",difficulty:"Hard",leetcode:493},
+            // Day 4: Arrays Part IV
+            19:{name:"2 Sum Problem",slug:"two-sum",topic:"Arrays",difficulty:"Easy",leetcode:1},
+            20:{name:"4 Sum Problem",slug:"4sum",topic:"Arrays",difficulty:"Medium",leetcode:18},
+            21:{name:"Longest Consecutive Sequence",slug:"longest-consecutive-sequence",topic:"Arrays",difficulty:"Medium",leetcode:128},
+            22:{name:"Largest Subarray with K sum",slug:"subarray-sum-equals-k",topic:"Arrays",difficulty:"Medium",leetcode:560},
+            23:{name:"Count number of subarrays with given xor K",slug:"count-subarrays-with-xor-equal-to-k",topic:"Arrays",difficulty:"Medium",leetcode:0},
+            24:{name:"Longest Substring Without Repeat",slug:"longest-substring-without-repeating-characters",topic:"Arrays",difficulty:"Medium",leetcode:3},
+            // Day 5: Linked List
+            25:{name:"Reverse Linked List",slug:"reverse-linked-list",topic:"Linked List",difficulty:"Easy",leetcode:206},
+            26:{name:"Middle of Linked List",slug:"middle-of-the-linked-list",topic:"Linked List",difficulty:"Easy",leetcode:876},
+            27:{name:"Merge Two Sorted Linked Lists",slug:"merge-two-sorted-lists",topic:"Linked List",difficulty:"Easy",leetcode:21},
+            28:{name:"Remove Nth Node From Back",slug:"remove-nth-node-from-end-of-list",topic:"Linked List",difficulty:"Medium",leetcode:19},
+            29:{name:"Add Two Numbers",slug:"add-two-numbers",topic:"Linked List",difficulty:"Medium",leetcode:2},
+            30:{name:"Delete Node in Linked List",slug:"delete-node-in-a-linked-list",topic:"Linked List",difficulty:"Easy",leetcode:237},
+            // Day 6: Linked List Part II
+            31:{name:"Find Intersection Point of Y LinkedList",slug:"intersection-of-two-linked-lists",topic:"Linked List",difficulty:"Easy",leetcode:160},
+            32:{name:"Detect a Cycle in Linked List",slug:"linked-list-cycle",topic:"Linked List",difficulty:"Easy",leetcode:141},
+            33:{name:"Reverse Linked List in groups of K",slug:"reverse-nodes-in-k-group",topic:"Linked List",difficulty:"Hard",leetcode:25},
+            34:{name:"Check if Linked List is Palindrome",slug:"palindrome-linked-list",topic:"Linked List",difficulty:"Easy",leetcode:234},
+            35:{name:"Find the Starting Point of Loop",slug:"linked-list-cycle-ii",topic:"Linked List",difficulty:"Medium",leetcode:142},
+            36:{name:"Flattening of Linked List",slug:"flatten-a-multilevel-doubly-linked-list",topic:"Linked List",difficulty:"Medium",leetcode:430},
+            // Day 7: Linked List & Arrays
+            37:{name:"Rotate a Linked List",slug:"rotate-list",topic:"Linked List",difficulty:"Medium",leetcode:61},
+            38:{name:"Clone a Linked List with Random and Next Pointer",slug:"copy-list-with-random-pointer",topic:"Linked List",difficulty:"Medium",leetcode:138},
+            39:{name:"3 Sum",slug:"3sum",topic:"Arrays",difficulty:"Medium",leetcode:15},
+            40:{name:"Trapping Rainwater",slug:"trapping-rain-water",topic:"Arrays",difficulty:"Hard",leetcode:42},
+            41:{name:"Remove Duplicate from Sorted Array",slug:"remove-duplicates-from-sorted-array",topic:"Arrays",difficulty:"Easy",leetcode:26},
+            42:{name:"Max Consecutive Ones",slug:"max-consecutive-ones",topic:"Arrays",difficulty:"Easy",leetcode:485},
+            // Day 8: Greedy
+            43:{name:"N meetings in one room",slug:"activity-selection",topic:"Greedy",difficulty:"Easy",leetcode:0},
+            44:{name:"Minimum number of platforms required",slug:"minimum-platforms",topic:"Greedy",difficulty:"Medium",leetcode:0},
+            45:{name:"Job Sequencing Problem",slug:"job-sequencing-problem",topic:"Greedy",difficulty:"Medium",leetcode:0},
+            46:{name:"Fractional Knapsack Problem",slug:"fractional-knapsack",topic:"Greedy",difficulty:"Medium",leetcode:0},
+            47:{name:"Greedy algorithm to find minimum coins",slug:"coin-change",topic:"Greedy",difficulty:"Medium",leetcode:322},
+            48:{name:"Activity Selection",slug:"activity-selection",topic:"Greedy",difficulty:"Easy",leetcode:0},
+            // Day 9: Recursion
+            49:{name:"Subset Sums",slug:"subsets",topic:"Recursion",difficulty:"Medium",leetcode:78},
+            50:{name:"Subset II",slug:"subsets-ii",topic:"Recursion",difficulty:"Medium",leetcode:90},
+            51:{name:"Combination sum-1",slug:"combination-sum",topic:"Recursion",difficulty:"Medium",leetcode:39},
+            52:{name:"Combination sum-2",slug:"combination-sum-ii",topic:"Recursion",difficulty:"Medium",leetcode:40},
+            53:{name:"Palindrome Partitioning",slug:"palindrome-partitioning",topic:"Recursion",difficulty:"Medium",leetcode:131},
+            54:{name:"K-th Permutation Sequence",slug:"permutation-sequence",topic:"Recursion",difficulty:"Hard",leetcode:60},
+            // Day 10: Recursion & Backtracking
+            55:{name:"Print all Permutations of a string/array",slug:"permutations",topic:"Backtracking",difficulty:"Medium",leetcode:46},
+            56:{name:"N Queens Problem",slug:"n-queens",topic:"Backtracking",difficulty:"Hard",leetcode:51},
+            57:{name:"Sudoku Solver",slug:"sudoku-solver",topic:"Backtracking",difficulty:"Hard",leetcode:37},
+            58:{name:"M Coloring Problem",slug:"m-coloring-problem",topic:"Backtracking",difficulty:"Medium",leetcode:0},
+            59:{name:"Rat in a Maze",slug:"rat-in-a-maze",topic:"Backtracking",difficulty:"Medium",leetcode:0},
+            60:{name:"Word Break (print all ways)",slug:"word-break-ii",topic:"Backtracking",difficulty:"Hard",leetcode:140},
+            // Day 11: Binary Search
+            61:{name:"The N-th root of an integer",slug:"nth-root",topic:"Binary Search",difficulty:"Medium",leetcode:0},
+            62:{name:"Matrix Median",slug:"matrix-median",topic:"Binary Search",difficulty:"Hard",leetcode:0},
+            63:{name:"Find the element that appears once in sorted array",slug:"single-element-in-a-sorted-array",topic:"Binary Search",difficulty:"Medium",leetcode:540},
+            64:{name:"Search element in a sorted and rotated array",slug:"search-in-rotated-sorted-array",topic:"Binary Search",difficulty:"Medium",leetcode:33},
+            65:{name:"Median of 2 sorted arrays",slug:"median-of-two-sorted-arrays",topic:"Binary Search",difficulty:"Hard",leetcode:4},
+            66:{name:"K-th element of two sorted arrays",slug:"k-th-element-of-two-sorted-arrays",topic:"Binary Search",difficulty:"Medium",leetcode:0},
+            67:{name:"Allocate Minimum Number of Pages",slug:"allocate-books",topic:"Binary Search",difficulty:"Hard",leetcode:0},
+            68:{name:"Aggressive Cows",slug:"aggressive-cows",topic:"Binary Search",difficulty:"Medium",leetcode:0},
+            // Day 12: Heaps
+            69:{name:"Max heap, Min Heap Implementation",slug:"kth-largest-element-in-an-array",topic:"Heaps",difficulty:"Medium",leetcode:215},
+            70:{name:"Kth Largest Element",slug:"kth-largest-element-in-an-array",topic:"Heaps",difficulty:"Medium",leetcode:215},
+            71:{name:"Maximum Sum Combination",slug:"maximum-sum-combination",topic:"Heaps",difficulty:"Medium",leetcode:0},
+            72:{name:"Find Median from Data Stream",slug:"find-median-from-data-stream",topic:"Heaps",difficulty:"Hard",leetcode:295},
+            73:{name:"Merge K sorted arrays",slug:"merge-k-sorted-lists",topic:"Heaps",difficulty:"Hard",leetcode:23},
+            74:{name:"K most frequent elements",slug:"top-k-frequent-elements",topic:"Heaps",difficulty:"Medium",leetcode:347},
+            // Day 13: Stack & Queue
+            75:{name:"Implement Stack using Arrays",slug:"implement-stack-using-queues",topic:"Stack & Queue",difficulty:"Easy",leetcode:225},
+            76:{name:"Implement Queue using Arrays",slug:"implement-queue-using-stacks",topic:"Stack & Queue",difficulty:"Easy",leetcode:232},
+            77:{name:"Implement Stack using Queue",slug:"implement-stack-using-queues",topic:"Stack & Queue",difficulty:"Easy",leetcode:225},
+            78:{name:"Implement Queue using Stack",slug:"implement-queue-using-stacks",topic:"Stack & Queue",difficulty:"Easy",leetcode:232},
+            79:{name:"Check for balanced parentheses",slug:"valid-parentheses",topic:"Stack & Queue",difficulty:"Easy",leetcode:20},
+            80:{name:"Next Greater Element",slug:"next-greater-element-i",topic:"Stack & Queue",difficulty:"Easy",leetcode:496},
+            81:{name:"Sort a stack",slug:"sort-stack",topic:"Stack & Queue",difficulty:"Medium",leetcode:0},
+            // Day 14: Stack & Queue Part II
+            82:{name:"Next Smaller Element",slug:"next-smaller-element",topic:"Stack & Queue",difficulty:"Medium",leetcode:0},
+            83:{name:"LRU cache",slug:"lru-cache",topic:"Stack & Queue",difficulty:"Medium",leetcode:146},
+            84:{name:"LFU cache",slug:"lfu-cache",topic:"Stack & Queue",difficulty:"Hard",leetcode:460},
+            85:{name:"Largest rectangle in a histogram",slug:"largest-rectangle-in-histogram",topic:"Stack & Queue",difficulty:"Hard",leetcode:84},
+            86:{name:"Sliding Window maximum",slug:"sliding-window-maximum",topic:"Stack & Queue",difficulty:"Hard",leetcode:239},
+            87:{name:"Implement Min Stack",slug:"min-stack",topic:"Stack & Queue",difficulty:"Easy",leetcode:155},
+            88:{name:"Rotten Oranges",slug:"rotting-oranges",topic:"Stack & Queue",difficulty:"Medium",leetcode:994},
+            89:{name:"Stock Span Problem",slug:"online-stock-span",topic:"Stack & Queue",difficulty:"Medium",leetcode:901},
+            // Day 15: Strings
+            90:{name:"Reverse Words in a String",slug:"reverse-words-in-a-string",topic:"Strings",difficulty:"Medium",leetcode:151},
+            91:{name:"Longest Palindrome in a string",slug:"longest-palindromic-substring",topic:"Strings",difficulty:"Medium",leetcode:5},
+            92:{name:"Roman Number to Integer and vice versa",slug:"roman-to-integer",topic:"Strings",difficulty:"Easy",leetcode:13},
+            93:{name:"Implement ATOI/STRSTR",slug:"string-to-integer-atoi",topic:"Strings",difficulty:"Medium",leetcode:8},
+            94:{name:"Longest Common Prefix",slug:"longest-common-prefix",topic:"Strings",difficulty:"Easy",leetcode:14},
+            95:{name:"Rabin Karp Algorithm",slug:"find-the-index-of-the-first-occurrence-in-a-string",topic:"Strings",difficulty:"Easy",leetcode:28},
+            // Day 16: Strings Part II
+            96:{name:"Z-Function",slug:"z-function",topic:"Strings",difficulty:"Medium",leetcode:0},
+            97:{name:"KMP Algorithm",slug:"find-the-index-of-the-first-occurrence-in-a-string",topic:"Strings",difficulty:"Easy",leetcode:28},
+            98:{name:"Convert Roman Number to Integer",slug:"roman-to-integer",topic:"Strings",difficulty:"Easy",leetcode:13},
+            99:{name:"Valid Anagram",slug:"valid-anagram",topic:"Strings",difficulty:"Easy",leetcode:242},
+            100:{name:"Count and Say",slug:"count-and-say",topic:"Strings",difficulty:"Medium",leetcode:38},
+            101:{name:"Compare version numbers",slug:"compare-version-numbers",topic:"Strings",difficulty:"Medium",leetcode:165},
+            // Day 17: Binary Tree
+            102:{name:"Inorder Traversal",slug:"binary-tree-inorder-traversal",topic:"Trees",difficulty:"Easy",leetcode:94},
+            103:{name:"Preorder Traversal",slug:"binary-tree-preorder-traversal",topic:"Trees",difficulty:"Easy",leetcode:144},
+            104:{name:"Postorder Traversal",slug:"binary-tree-postorder-traversal",topic:"Trees",difficulty:"Easy",leetcode:145},
+            105:{name:"Level order Traversal / Level order traversal in spiral form",slug:"binary-tree-level-order-traversal",topic:"Trees",difficulty:"Medium",leetcode:102},
+            106:{name:"Height of a Binary Tree",slug:"maximum-depth-of-binary-tree",topic:"Trees",difficulty:"Easy",leetcode:104},
+            107:{name:"Diameter of Binary Tree",slug:"diameter-of-binary-tree",topic:"Trees",difficulty:"Easy",leetcode:543},
+            // Day 18: Binary Tree Part II
+            108:{name:"Maximum path sum",slug:"binary-tree-maximum-path-sum",topic:"Trees",difficulty:"Hard",leetcode:124},
+            109:{name:"Check if the Binary tree is height-balanced",slug:"balanced-binary-tree",topic:"Trees",difficulty:"Easy",leetcode:110},
+            110:{name:"LCA in Binary Tree",slug:"lowest-common-ancestor-of-a-binary-tree",topic:"Trees",difficulty:"Medium",leetcode:236},
+            111:{name:"Check if two trees are identical",slug:"same-tree",topic:"Trees",difficulty:"Easy",leetcode:100},
+            112:{name:"Zigzag Traversal of Binary Tree",slug:"binary-tree-zigzag-level-order-traversal",topic:"Trees",difficulty:"Medium",leetcode:103},
+            113:{name:"Boundary Traversal",slug:"boundary-of-binary-tree",topic:"Trees",difficulty:"Medium",leetcode:545},
+            // Day 19: Binary Tree Part III
+            114:{name:"Maximum width of a Binary Tree",slug:"maximum-width-of-binary-tree",topic:"Trees",difficulty:"Medium",leetcode:662},
+            115:{name:"Print all the Nodes at a distance of K in Binary Tree",slug:"all-nodes-distance-k-in-binary-tree",topic:"Trees",difficulty:"Medium",leetcode:863},
+            116:{name:"Minimum Time to Burn the Binary Tree from a Node",slug:"time-needed-to-inform-all-employees",topic:"Trees",difficulty:"Medium",leetcode:1376},
+            117:{name:"Count total Nodes in a COMPLETE Binary Tree",slug:"count-complete-tree-nodes",topic:"Trees",difficulty:"Easy",leetcode:222},
+            118:{name:"Requirements needed to construct a Unique Binary Tree",slug:"construct-binary-tree-from-preorder-and-inorder-traversal",topic:"Trees",difficulty:"Medium",leetcode:105},
+            119:{name:"Construct Binary Tree from inorder and preorder",slug:"construct-binary-tree-from-preorder-and-inorder-traversal",topic:"Trees",difficulty:"Medium",leetcode:105},
+            // Day 20: Binary Search Tree
+            120:{name:"Populate Next Right pointers of Tree",slug:"populating-next-right-pointers-in-each-node",topic:"BST",difficulty:"Medium",leetcode:116},
+            121:{name:"Search given Key in BST",slug:"search-in-a-binary-search-tree",topic:"BST",difficulty:"Easy",leetcode:700},
+            122:{name:"Construct a BST from a preorder traversal",slug:"construct-binary-search-tree-from-preorder-traversal",topic:"BST",difficulty:"Medium",leetcode:1008},
+            123:{name:"Check if Binary tree is BST or not",slug:"validate-binary-search-tree",topic:"BST",difficulty:"Medium",leetcode:98},
+            124:{name:"Find LCA of two nodes in BST",slug:"lowest-common-ancestor-of-a-binary-search-tree",topic:"BST",difficulty:"Easy",leetcode:235},
+            125:{name:"Find the inorder predecessor/successor",slug:"inorder-successor-in-bst",topic:"BST",difficulty:"Medium",leetcode:285},
+            // Day 21: Binary Search Tree Part II
+            126:{name:"BST iterator",slug:"binary-search-tree-iterator",topic:"BST",difficulty:"Medium",leetcode:173},
+            127:{name:"Two Sum in BST",slug:"two-sum-iv-input-is-a-bst",topic:"BST",difficulty:"Easy",leetcode:653},
+            128:{name:"Recover BST",slug:"recover-binary-search-tree",topic:"BST",difficulty:"Hard",leetcode:99},
+            129:{name:"Largest BST in a Binary Tree",slug:"largest-bst-subtree",topic:"BST",difficulty:"Medium",leetcode:333},
+            130:{name:"Serialize and Deserialize Binary Tree",slug:"serialize-and-deserialize-binary-tree",topic:"BST",difficulty:"Hard",leetcode:297},
+            // Day 22: Graphs
+            131:{name:"Clone a Graph",slug:"clone-graph",topic:"Graphs",difficulty:"Medium",leetcode:133},
+            132:{name:"DFS of Graph",slug:"number-of-islands",topic:"Graphs",difficulty:"Medium",leetcode:200},
+            133:{name:"BFS of graph",slug:"rotting-oranges",topic:"Graphs",difficulty:"Medium",leetcode:994},
+            134:{name:"Detect cycle in undirected graph",slug:"graph-valid-tree",topic:"Graphs",difficulty:"Medium",leetcode:261},
+            135:{name:"Detect cycle in directed graph",slug:"course-schedule",topic:"Graphs",difficulty:"Medium",leetcode:207},
+            136:{name:"Topo sort / DFS",slug:"course-schedule-ii",topic:"Graphs",difficulty:"Medium",leetcode:210},
+            // Day 23: Graphs Part II
+            137:{name:"Number of Islands",slug:"number-of-islands",topic:"Graphs",difficulty:"Medium",leetcode:200},
+            138:{name:"Bipartite Check",slug:"is-graph-bipartite",topic:"Graphs",difficulty:"Medium",leetcode:785},
+            139:{name:"Strongly Connected Components (Kosaraju's algo)",slug:"strongly-connected-components",topic:"Graphs",difficulty:"Hard",leetcode:0},
+            140:{name:"Dijkstra's Algorithm",slug:"network-delay-time",topic:"Graphs",difficulty:"Medium",leetcode:743},
+            141:{name:"Bellman Ford Algorithm",slug:"bellman-ford",topic:"Graphs",difficulty:"Medium",leetcode:0},
+            142:{name:"Floyd Warshall Algorithm",slug:"find-the-city-with-smallest-number-of-neighbors",topic:"Graphs",difficulty:"Medium",leetcode:1334},
+            // Day 24: Dynamic Programming
+            143:{name:"Max Product Subarray",slug:"maximum-product-subarray",topic:"DP",difficulty:"Medium",leetcode:152},
+            144:{name:"Longest Increasing Subsequence",slug:"longest-increasing-subsequence",topic:"DP",difficulty:"Medium",leetcode:300},
+            145:{name:"Longest Common Subsequence",slug:"longest-common-subsequence",topic:"DP",difficulty:"Medium",leetcode:1143},
+            146:{name:"0-1 Knapsack Problem",slug:"0-1-knapsack",topic:"DP",difficulty:"Medium",leetcode:0},
+            147:{name:"Edit Distance",slug:"edit-distance",topic:"DP",difficulty:"Hard",leetcode:72},
+            148:{name:"Maximum sum increasing subsequence",slug:"maximum-sum-increasing-subsequence",topic:"DP",difficulty:"Medium",leetcode:0},
+            // Day 25: Dynamic Programming Part II
+            149:{name:"Matrix Chain Multiplication",slug:"burst-balloons",topic:"DP",difficulty:"Hard",leetcode:312},
+            150:{name:"Maximum sum rectangle",slug:"max-sum-of-rectangle-no-larger-than-k",topic:"DP",difficulty:"Hard",leetcode:363},
+            151:{name:"Maximum profit in Job scheduling",slug:"job-scheduling",topic:"DP",difficulty:"Hard",leetcode:1235},
+            152:{name:"Minimum number of coins",slug:"coin-change",topic:"DP",difficulty:"Medium",leetcode:322},
+            153:{name:"Minimum cost to fill given weight in a bag",slug:"minimum-cost-to-fill-bag",topic:"DP",difficulty:"Medium",leetcode:0},
+            154:{name:"Minimum Sideway Jumps",slug:"minimum-sideway-jumps",topic:"DP",difficulty:"Medium",leetcode:1824},
+            // Day 26: Tries
+            155:{name:"Implement Trie",slug:"implement-trie-prefix-tree",topic:"Tries",difficulty:"Medium",leetcode:208},
+            156:{name:"Implement Trie II",slug:"design-add-and-search-words-data-structure",topic:"Tries",difficulty:"Medium",leetcode:211},
+            157:{name:"Longest String with All Prefixes",slug:"longest-word-in-dictionary",topic:"Tries",difficulty:"Easy",leetcode:720},
+            158:{name:"Number of Distinct Substrings in a String",slug:"distinct-substrings",topic:"Tries",difficulty:"Medium",leetcode:0},
+            159:{name:"Power Set using Bit Manipulation",slug:"subsets",topic:"Tries",difficulty:"Medium",leetcode:78},
+            160:{name:"Maximum XOR of two numbers in an array",slug:"maximum-xor-of-two-numbers-in-an-array",topic:"Tries",difficulty:"Medium",leetcode:421},
+            // Day 27: Tries and Advanced
+            161:{name:"Maximum XOR with an element from array",slug:"maximize-xor-of-representative-elements",topic:"Tries",difficulty:"Hard",leetcode:1707},
+            // Day 28: Advanced Graphs
+            162:{name:"Alien Dictionary (Topological Sort)",slug:"alien-dictionary",topic:"Advanced Graphs",difficulty:"Hard",leetcode:0},
+            163:{name:"Implement Floyd Warshall Algorithm",slug:"find-the-city-with-smallest-number-of-neighbors",topic:"Advanced Graphs",difficulty:"Medium",leetcode:1334},
+            164:{name:"Travelling Salesman Problem",slug:"travelling-salesman-problem",topic:"Advanced Graphs",difficulty:"Hard",leetcode:0},
+            165:{name:"Graph Colouring",slug:"m-coloring-problem",topic:"Advanced Graphs",difficulty:"Medium",leetcode:0},
+            166:{name:"Snakes and Ladders",slug:"snakes-and-ladders",topic:"Advanced Graphs",difficulty:"Medium",leetcode:909},
+            167:{name:"Minimize Cash Flow among a given set of friends",slug:"minimize-cash-flow",topic:"Advanced Graphs",difficulty:"Hard",leetcode:0},
+            // Day 29: Mixed Questions
+            168:{name:"Two Sum",slug:"two-sum",topic:"Mixed",difficulty:"Easy",leetcode:1},
+            169:{name:"4 Sum",slug:"4sum",topic:"Mixed",difficulty:"Medium",leetcode:18},
+            170:{name:"Longest Substring Without Repeat",slug:"longest-substring-without-repeating-characters",topic:"Mixed",difficulty:"Medium",leetcode:3},
+            171:{name:"Count of Subarrays with given XOR",slug:"subarrays-with-sum-divisible-by-k",topic:"Mixed",difficulty:"Medium",leetcode:974},
+            172:{name:"Longest Subarray with 0 sum",slug:"contiguous-array",topic:"Mixed",difficulty:"Medium",leetcode:525},
+            173:{name:"Count Distinct elements in every window",slug:"sliding-window-maximum",topic:"Mixed",difficulty:"Hard",leetcode:239},
+            // Day 30: Last Lap
+            174:{name:"Word Break",slug:"word-break",topic:"DP",difficulty:"Medium",leetcode:139},
+            175:{name:"Minimum Operations to convert string",slug:"minimum-operations-to-make-string",topic:"DP",difficulty:"Medium",leetcode:0},
+            176:{name:"Valid Parenthesis Checker",slug:"valid-parentheses",topic:"Stack",difficulty:"Easy",leetcode:20},
+            177:{name:"N meetings in one room",slug:"n-meetings-in-one-room",topic:"Greedy",difficulty:"Easy",leetcode:0},
+            178:{name:"Median in a stream of integers",slug:"find-median-from-data-stream",topic:"Heaps",difficulty:"Hard",leetcode:295},
+            179:{name:"K-th Largest Sum Contiguous Subarray",slug:"k-th-largest-sum-subarray",topic:"Heaps",difficulty:"Medium",leetcode:0},
+            180:{name:"Distinct Numbers in Window",slug:"distinct-numbers-in-window",topic:"Heaps",difficulty:"Medium",leetcode:0},
+            181:{name:"K-th Largest Element in an Unsorted Array",slug:"kth-largest-element-in-an-array",topic:"Heaps",difficulty:"Medium",leetcode:215},
+            182:{name:"Flood Fill",slug:"flood-fill",topic:"Graphs",difficulty:"Easy",leetcode:733},
+            183:{name:"Number of Islands",slug:"number-of-islands",topic:"Graphs",difficulty:"Medium",leetcode:200},
+            184:{name:"Detect Cycle in Directed Graph",slug:"course-schedule",topic:"Graphs",difficulty:"Medium",leetcode:207},
+            185:{name:"Rotting Oranges",slug:"rotting-oranges",topic:"Graphs",difficulty:"Medium",leetcode:994},
+            186:{name:"Steps by Knight",slug:"minimum-knight-moves",topic:"Graphs",difficulty:"Medium",leetcode:1197},
+            187:{name:"Implement Trie",slug:"implement-trie-prefix-tree",topic:"Tries",difficulty:"Medium",leetcode:208},
+            188:{name:"Distinct Substrings",slug:"distinct-substrings",topic:"Tries",difficulty:"Medium",leetcode:0},
+            189:{name:"Serialize and Deserialize Binary Tree",slug:"serialize-and-deserialize-binary-tree",topic:"Trees",difficulty:"Hard",leetcode:297},
+            190:{name:"Largest BST in Binary Tree",slug:"largest-bst-subtree",topic:"BST",difficulty:"Medium",leetcode:333},
+            191:{name:"Kth Largest Element in a stream",slug:"kth-largest-element-in-a-stream",topic:"Heaps",difficulty:"Easy",leetcode:703},
+        };
+
+        // Storage key
+        const STORAGE_KEY = 'dsa-problems';
+
+        // In-memory fallback if localStorage is not available
+        let memoryStorage = [];
+
+        // Check if localStorage is available
+        function isLocalStorageAvailable() {
+            try {
+                const test = '__localStorage_test__';
+                window.localStorage.setItem(test, test);
+                window.localStorage.removeItem(test);
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        const useLocalStorage = isLocalStorageAvailable();
+
+        // Load problems from storage
+        function loadProblems() {
+            try {
+                if (useLocalStorage) {
+                    const stored = window.localStorage.getItem(STORAGE_KEY);
+                    return stored ? JSON.parse(stored) : [];
+                } else {
+                    console.warn('localStorage not available, using memory storage');
+                    return memoryStorage;
+                }
+            } catch (error) {
+                console.error('Error loading problems:', error);
+                return memoryStorage;
+            }
+        }
+
+        // Save problems to storage
+        function saveProblems(problems) {
+            try {
+                if (useLocalStorage) {
+                    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(problems));
+                } else {
+                    memoryStorage = problems;
+                    console.warn('localStorage not available, saved to memory (will be lost on refresh)');
+                }
+            } catch (error) {
+                console.error('Error saving problems:', error);
+                memoryStorage = problems;
+            }
+        }
+
+        // Get today's date (without time)
+        function getTodayDate() {
+            const today = new Date();
+            return new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        }
+
+        // Format date for display
+        function formatDate(date) {
+            return new Date(date).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            });
+        }
+
+        // LeetCode problem number to slug mapping (for Striver's SDE Sheet)
+        const LEETCODE_SLUGS = {
+            1:"two-sum",2:"add-two-numbers",3:"longest-substring-without-repeating-characters",4:"median-of-two-sorted-arrays",5:"longest-palindromic-substring",8:"string-to-integer-atoi",13:"roman-to-integer",15:"3sum",18:"4sum",19:"remove-nth-node-from-end-of-list",20:"valid-parentheses",21:"merge-two-sorted-lists",25:"reverse-nodes-in-k-group",26:"remove-duplicates-from-sorted-array",31:"next-permutation",33:"search-in-rotated-sorted-array",37:"sudoku-solver",38:"count-and-say",39:"combination-sum",40:"combination-sum-ii",42:"trapping-rain-water",46:"permutations",48:"rotate-image",50:"powx-n",51:"n-queens",53:"maximum-subarray",56:"merge-intervals",60:"permutation-sequence",61:"rotate-list",62:"unique-paths",64:"minimum-path-sum",69:"sqrtx",72:"edit-distance",73:"set-matrix-zeroes",74:"search-a-2d-matrix",75:"sort-colors",78:"subsets",84:"largest-rectangle-in-histogram",88:"merge-sorted-array",90:"subsets-ii",94:"binary-tree-inorder-traversal",98:"validate-binary-search-tree",100:"same-tree",101:"symmetric-tree",102:"binary-tree-level-order-traversal",103:"binary-tree-zigzag-level-order-traversal",104:"maximum-depth-of-binary-tree",105:"construct-binary-tree-from-preorder-and-inorder-traversal",106:"construct-binary-tree-from-inorder-and-postorder-traversal",110:"balanced-binary-tree",114:"flatten-binary-tree-to-linked-list",116:"populating-next-right-pointers-in-each-node",118:"pascals-triangle",121:"best-time-to-buy-and-sell-stock",124:"binary-tree-maximum-path-sum",128:"longest-consecutive-sequence",131:"palindrome-partitioning",132:"palindrome-partitioning-ii",133:"clone-graph",138:"copy-list-with-random-pointer",139:"word-break",141:"linked-list-cycle",142:"linked-list-cycle-ii",144:"binary-tree-preorder-traversal",145:"binary-tree-postorder-traversal",146:"lru-cache",151:"reverse-words-in-a-string",152:"maximum-product-subarray",155:"min-stack",160:"intersection-of-two-linked-lists",165:"compare-version-numbers",169:"majority-element",173:"binary-search-tree-iterator",200:"number-of-islands",206:"reverse-linked-list",208:"implement-trie-prefix-tree",215:"kth-largest-element-in-an-array",225:"implement-stack-using-queues",229:"majority-element-ii",230:"kth-smallest-element-in-a-bst",232:"implement-queue-using-stacks",234:"palindrome-linked-list",235:"lowest-common-ancestor-of-a-binary-search-tree",236:"lowest-common-ancestor-of-a-binary-tree",237:"delete-node-in-a-linked-list",239:"sliding-window-maximum",242:"valid-anagram",287:"find-the-duplicate-number",295:"find-median-from-data-stream",297:"serialize-and-deserialize-binary-tree",300:"longest-increasing-subsequence",322:"coin-change",347:"top-k-frequent-elements",421:"maximum-xor-of-two-numbers-in-an-array",460:"lfu-cache",485:"max-consecutive-ones",493:"reverse-pairs",496:"next-greater-element-i",540:"single-element-in-a-sorted-array",543:"diameter-of-binary-tree",653:"two-sum-iv-input-is-a-bst",700:"search-in-a-binary-search-tree",703:"kth-largest-element-in-a-stream",733:"flood-fill",785:"is-graph-bipartite",876:"middle-of-the-linked-list",887:"super-egg-drop",1008:"construct-binary-search-tree-from-preorder-traversal",1143:"longest-common-subsequence",1235:"meeting-scheduler"
+        };
+
+        // Get problem details (name and link)
+        function getProblemDetails(listName, problemNumber, customData) {
+            // Custom problems (leetcode, hackerrank, etc.) store full data directly
+            if (listName === 'custom') {
+                return {
+                    name: customData?.name || `Problem #${problemNumber}`,
+                    link: customData?.link || '',
+                    topic: customData?.topic || 'Custom',
+                    difficulty: customData?.difficulty || 'Medium'
+                };
+            }
+            let problemData = null;
+            let link = '';
+
+            if (listName === 'neetcode150') {
+                problemData = NEETCODE_150_PROBLEMS[problemNumber];
+                if (problemData && problemData.slug) {
+                    link = `https://neetcode.io/problems/${problemData.slug}`;
+                }
+            } else if (listName === 'blind75') {
+                problemData = BLIND_75_PROBLEMS[problemNumber];
+                if (problemData && problemData.slug) {
+                    link = `https://neetcode.io/problems/${problemData.slug}`;
+                }
+            } else if (listName === 'striver') {
+                problemData = STRIVER_PROBLEMS[problemNumber];
+                if (problemData && problemData.leetcode > 0) {
+                    const leetcodeNum = problemData.leetcode;
+                    const slug = LEETCODE_SLUGS[leetcodeNum];
+                    if (slug) {
+                        link = `https://leetcode.com/problems/${slug}/`;
+                    } else {
+                        // Fallback to problem number if slug not found
+                        link = `https://leetcode.com/problems/`;
+                    }
+                } else if (problemData) {
+                    // For problems without LeetCode numbers (custom problems)
+                    link = `https://takeuforward.org/interviews/strivers-sde-sheet-top-coding-interview-problems/`;
+                }
+            }
+
+            return {
+                name: problemData ? problemData.name : `Problem #${problemNumber}`,
+                link: link || 'https://takeuforward.org/interviews/strivers-sde-sheet-top-coding-interview-problems/',
+                topic: problemData ? (problemData.topic || '') : '',
+                difficulty: problemData ? (problemData.difficulty || '') : ''
+            };
+        }
+
+        // Schedule: solve → Rep1 +3d → Rep2 +6d from Rep1 actual date → Rep3 +12d from Rep2 actual date
+        function calculateNextRevisionDate(problem, oldRevNum, completedAt) {
+            const base = new Date(completedAt || problem.lastRevisedDate || problem.dateSolved);
+            const daysToAdd = oldRevNum === 0 ? 3 : oldRevNum === 1 ? 6 : 12;
+            return new Date(base.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
+        }
+
+        function getFirstRevisionDate(problem) {
+            const solveDate = new Date(problem.dateSolved);
+            return new Date(solveDate.getTime() + 3 * 24 * 60 * 60 * 1000);
+        }
+
+        // Get problems due today or overdue
+        function getProblemsDueToday(problems) {
+            const today = getTodayDate().getTime();
+            console.log('Checking problems due today. Today is:', new Date(today).toDateString());
+            
+            const dueProblems = problems.filter(problem => {
+                if (!problem.nextRevisionDate) return false;
+                if (problem.revisionNumber >= 3) return false; // All revisions done
+                
+                const revisionDate = new Date(problem.nextRevisionDate);
+                const revisionTime = new Date(revisionDate.getFullYear(), revisionDate.getMonth(), revisionDate.getDate()).getTime();
+                
+                const isDue = revisionTime <= today;
+                
+                if (isDue) {
+                    const daysOverdue = Math.floor((today - revisionTime) / (24 * 60 * 60 * 1000));
+                    console.log(`Problem #${problem.problemNumber}: Due ${new Date(revisionTime).toDateString()}, ${daysOverdue} day(s) overdue`);
+                }
+                
+                // Include problems due today or overdue
+                return isDue;
+            });
+            
+            console.log(`Found ${dueProblems.length} problems due today or overdue`);
+            return dueProblems;
+        }
+
+        // Mark problem as revised
+        function markProblemRevised(problemId) {
+            const problems = loadProblems();
+            const problemIndex = problems.findIndex(p => p.id === problemId);
+            
+            if (problemIndex === -1) return;
+            
+            const problem = problems[problemIndex];
+            const oldRevNum = problem.revisionNumber || 0; // 0=none done yet, 1=Rep1 done, 2=Rep2 done
+            const newRevNum = oldRevNum + 1;               // 1=Rep1, 2=Rep2, 3=Rep3
+            
+            // Prompt for revision time
+            const timeInput = prompt(`How long did it take? (minutes)\n\nRep ${newRevNum} of Problem #${problem.problemNumber}`);
+            
+            if (timeInput === null) return;
+            
+            const revisionTime = parseFloat(timeInput);
+            if (isNaN(revisionTime) || revisionTime <= 0) {
+                alert('Please enter a valid positive number for time in minutes.');
+                return;
+            }
+            
+            const now = new Date().toISOString();
+
+            // Initialize revisionTimes array if it doesn't exist
+            if (!problem.revisionTimes) problem.revisionTimes = [];
+            
+            // Add the SR rep time
+            problem.revisionTimes.push({
+                revisionNumber: newRevNum,
+                timeTaken: revisionTime,
+                date: now
+            });
+            
+            // Update revision number AFTER capturing oldRevNum
+            problem.revisionNumber = newRevNum;
+            problem.lastRevisedDate = now;
+            
+            // Schedule next SR rep based on ACTUAL completion date and OLD rev number
+            if (newRevNum < 3) {
+                problem.nextRevisionDate = calculateNextRevisionDate(problem, oldRevNum, now).toISOString();
+            } else {
+                problem.nextRevisionDate = null; // All 3 SR reps complete
+            }
+            
+            saveProblems(problems);
+            
+            // Re-render everything
+            renderProblems(problems);
+            renderDueToday(problems);
+            updateStats(problems);
+            renderGoalTracker(problems);
+            
+            showNotification(`Rep ${newRevNum} completed: ${revisionTime} min`, 'success');
+        }
+
+        // Delete a problem
+        function deleteProblem(problemId) {
+            const problems = loadProblems();
+            const problemToDelete = problems.find(p => p.id === problemId);
+            
+            if (!problemToDelete) {
+                console.error('Problem not found');
+                return;
+            }
+            
+            const details = getProblemDetails(problemToDelete.listName, problemToDelete.problemNumber, problemToDelete.customData);
+            const confirmMessage = `Are you sure you want to delete "${details.name}" (Problem #${problemToDelete.problemNumber})?\n\nThis will permanently remove:\n- The problem from your progress\n- All revision history\n- Next revision date\n\nYou can add it back later as a fresh entry.`;
+            
+            if (!confirm(confirmMessage)) {
+                return;
+            }
+            
+            const filteredProblems = problems.filter(p => p.id !== problemId);
+            
+            saveProblems(filteredProblems);
+            console.log(`Deleted problem #${problemToDelete.problemNumber} (${details.name})`);
+            console.log(`All revision data cleared. Can be re-added as fresh entry.`);
+            
+            // Re-render everything
+            renderProblems(filteredProblems);
+            renderDueToday(filteredProblems);
+            updateStats(filteredProblems);
+            renderGoalTracker(filteredProblems);
+            
+            // Show success message briefly
+            showNotification(`Deleted: ${details.name}`, 'success');
+        }
+        
+        // Show notification message
+        function showNotification(message, type = 'info') {
+            // Remove existing notification if any
+            const existing = document.querySelector('.notification');
+            if (existing) existing.remove();
+            
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 2rem;
+                right: 2rem;
+                padding: 1rem 1.5rem;
+                background: ${type === 'success' ? 'var(--accent-primary)' : 'var(--accent-danger)'};
+                color: var(--bg-primary);
+                border-radius: 6px;
+                font-weight: 600;
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+                z-index: 1000;
+                animation: slideInRight 0.3s ease;
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Auto-remove after 3 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Get next revision date for display
+        function getNextRevisionDate(problem) {
+            if (problem.revisionNumber >= 3 || !problem.nextRevisionDate) {
+                return null; // All revisions completed
+            }
+            
+            return new Date(problem.nextRevisionDate);
+        }
+
+        // Update statistics
+        function updateStats(problems) {
+            const uniqueProblems = new Set(problems.map(p => p.listName + ':' + p.problemNumber));
+            const totalSolved = uniqueProblems.size;
+            const dueToday = getProblemsDueToday(problems).length;
+            const avgTime = problems.length > 0 
+                ? Math.round(problems.reduce((sum, p) => sum + p.timeTaken, 0) / problems.length)
+                : 0;
+
+            document.getElementById('totalSolved').textContent = totalSolved;
+            document.getElementById('dueToday').textContent = dueToday;
+            document.getElementById('avgTime').textContent = `${avgTime}m`;
+        }
+
+        // Render due today section
+        function renderDueToday(problems) {
+            const dueProblems = getProblemsDueToday(problems);
+            const section = document.getElementById('dueTodaySection');
+            const list = document.getElementById('dueList');
+
+            section.style.display = 'block'; // Always show the section
+
+            if (dueProblems.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state" style="padding: 1.5rem; text-align: center;">
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.5;">✓</div>
+                        <p style="font-size: 0.9rem; color: var(--text-secondary);">No problems due for revision today. Keep solving new problems!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = dueProblems.map(problem => {
+                const details = getProblemDetails(problem.listName, problem.problemNumber, problem.customData);
+                const listDisplayName = {
+                    neetcode150: 'NeetCode 150',
+                    blind75: 'Blind 75',
+                    striver: "Striver's SDE",
+                    custom: 'Custom'
+                }[problem.listName] || problem.listName;
+
+                const revisionNum = (problem.revisionNumber || 0) + 1;
+                const daysOverdue = Math.floor((getTodayDate() - new Date(problem.nextRevisionDate)) / (24 * 60 * 60 * 1000));
+                const isOverdue = daysOverdue > 0;
+
+                return `
+                    <div class="due-item ${isOverdue ? 'overdue' : ''}">
+                        <div class="due-item-info">
+                            <div class="due-item-title">
+                                ${details.name} - Rep ${revisionNum}/3
+                                ${isOverdue ? `<span class="overdue-badge">⚠ ${daysOverdue}d late</span>` : ''}
+                            </div>
+                            <div class="due-item-meta">${listDisplayName} • Originally solved ${formatDate(problem.dateSolved)}</div>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <a href="${details.link}" target="_blank" class="due-item-link">Solve →</a>
+                            <button onclick="markProblemRevised(${problem.id})" class="due-item-link" style="border: 1px solid var(--accent-primary); background: transparent; color: var(--accent-primary); cursor: pointer;">✓ Done</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Render problems list
+        function renderProblems(problems) {
+            const list = document.getElementById('problemsList');
+
+            if (problems.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📊</div>
+                        <p>No problems tracked yet. Start by adding your first problem!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Sort by date (newest first)
+            const sortedProblems = [...problems].sort((a, b) => 
+                new Date(b.dateSolved) - new Date(a.dateSolved)
+            );
+
+            list.innerHTML = sortedProblems.map(problem => {
+                const details = getProblemDetails(problem.listName, problem.problemNumber, problem.customData);
+                const nextRevision = getNextRevisionDate(problem);
+                const listDisplayName = {
+                    neetcode150: 'NeetCode 150',
+                    blind75: 'Blind 75',
+                    striver: "Striver's SDE",
+                    custom: 'Custom'
+                }[problem.listName] || problem.listName;
+
+                const srDone = problem.revisionNumber || 0;
+                const revisionStatus = srDone > 0
+                    ? `Rep ${srDone}/3 complete`
+                    : 'No reps yet';
+
+                // Build SR reps display (Rep 1, Rep 2, Rep 3)
+                let srTimesHtml = '';
+                if (problem.revisionTimes && problem.revisionTimes.length > 0) {
+                    srTimesHtml = '<div class="problem-meta-item" style="grid-column: span 2;"><strong>SR Reps:</strong><div style="margin-top:0.25rem; display:flex; gap:0.75rem; flex-wrap:wrap;">';
+                    srTimesHtml += problem.revisionTimes.map(rev =>
+                        `<span style="color:var(--accent-primary); font-size:0.82rem;">Rep ${rev.revisionNumber}: ${rev.timeTaken} min</span>`
+                    ).join('');
+                    srTimesHtml += '</div></div>';
+                }
+
+                // Build manual revisions display (Revision 1, Revision 2...)
+                let manualTimesHtml = '';
+                if (problem.manualRevisions && problem.manualRevisions.length > 0) {
+                    manualTimesHtml = '<div class="problem-meta-item" style="grid-column: span 2;"><strong>Manual Revisions:</strong><div style="margin-top:0.25rem; display:flex; gap:0.75rem; flex-wrap:wrap;">';
+                    manualTimesHtml += problem.manualRevisions.map((rev, i) =>
+                        `<span style="color:var(--accent-secondary); font-size:0.82rem;">Revision ${i+1}: ${rev.timeTaken} min</span>`
+                    ).join('');
+                    manualTimesHtml += '</div></div>';
+                }
+
+                const nextReviewText = nextRevision
+                    ? formatDate(nextRevision)
+                    : problem.revisionNumber >= 3
+                        ? 'All 3 reps complete ✓'
+                        : formatDate(getFirstRevisionDate(problem));
+
+                const diffClass = details.difficulty ? `difficulty-${details.difficulty.toLowerCase()}` : '';
+                const diffBadge = details.difficulty ? `<span class="difficulty-badge ${diffClass}">${details.difficulty}</span>` : '';
+                const topicBadge = details.topic ? `<span class="topic-badge">${details.topic}</span>` : '';
+
+                return `
+                    <div class="problem-item">
+                        <div class="problem-header">
+                            <div>
+                                <div class="problem-number">Problem #${problem.problemNumber}</div>
+                                <div class="problem-name">${details.name}</div>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; justify-content: flex-end;">
+                                <div class="problem-badge">${listDisplayName}</div>
+                                ${diffBadge}
+                                ${topicBadge}
+                                <button onclick="deleteProblem(${problem.id})" class="delete-btn" title="Delete problem">
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M2 4h12M5.333 4V2.667a1.333 1.333 0 0 1 1.334-1.334h2.666a1.333 1.333 0 0 1 1.334 1.334V4m2 0v9.333a1.333 1.333 0 0 1-1.334 1.334H4.667a1.333 1.333 0 0 1-1.334-1.334V4h9.334Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="problem-meta">
+                            <div class="problem-meta-item">
+                                <strong>Date:</strong> ${formatDate(problem.dateSolved)}
+                            </div>
+                            <div class="problem-meta-item">
+                                <strong>Initial Time:</strong> ${problem.timeTaken} min
+                            </div>
+                            <div class="problem-meta-item">
+                                <strong>SR Reps:</strong> ${revisionStatus}
+                            </div>
+                            <div class="problem-meta-item">
+                                <strong>Next Review:</strong> ${nextReviewText}
+                            </div>
+                            ${srTimesHtml}
+                            ${manualTimesHtml}
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem; flex-wrap: wrap;">
+                            <a href="${details.link}" target="_blank" class="problem-link">View Problem →</a>
+                            <button class="btn-small btn-revision" onclick="openManualRevision(${problem.id})">+ Log Revision</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Handle standard form submission (by number)
+        document.getElementById('problemForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const problemNumber = parseInt(document.getElementById('problemNumber').value);
+            const timeTaken = parseFloat(document.getElementById('timeTaken').value);
+            const listName = document.getElementById('listName').value;
+            if (!listName || !problemNumber || isNaN(timeTaken) || timeTaken <= 0) {
+                showNotification('Please fill all fields', 'error'); return;
+            }
+            addProblemToList(problemNumber, listName, timeTaken, null);
+            e.target.reset();
+            document.getElementById('problemPreview').textContent = '';
+        });
+
+
+
+        // Initialize app — always starts empty for new users
+        function initializeWithData() {
+            const CURRENT_VERSION = 'public-1.0';
+            const versionKey = 'dsa-tracker-version';
+            const storedVersion = useLocalStorage ? window.localStorage.getItem(versionKey) : null;
+            if (storedVersion !== CURRENT_VERSION) {
+                // Clear any old prefilled data from previous versions
+                if (useLocalStorage) {
+                    window.localStorage.removeItem('dsa-problems');
+                    window.localStorage.setItem(versionKey, CURRENT_VERSION);
+                }
+            }
+        }
+
+        // ── Goal Tracker ───────────────────────────────────────────────
+        function loadGoalSettings() {
+            try {
+                const raw = useLocalStorage ? window.localStorage.getItem('dsa-goal-settings') : null;
+                return raw ? JSON.parse(raw) : null;
+            } catch(e) { return null; }
+        }
+        function saveGoalSettings(settings) {
+            try {
+                if (useLocalStorage) window.localStorage.setItem('dsa-goal-settings', JSON.stringify(settings));
+            } catch(e) {}
+        }
+
+        function renderGoalTracker(problems) {
+            const settings = loadGoalSettings();
+            if (!settings) {
+                // Show setup prompt instead
+                document.getElementById('goalTracker').innerHTML = `
+                    <div class="goal-header">
+                        <div class="goal-title">🎯 Goal Tracker</div>
+                        <button class="btn-small" onclick="openGoalSetup()" style="background:var(--accent-warning);color:#000;font-weight:700;">⚙ Set Up Goal</button>
+                    </div>
+                    <p style="color:var(--text-secondary);font-size:0.85rem;">Configure your goal list and deadline to start tracking your progress.</p>
+                `;
+                return;
+            }
+
+            const LIST_TOTALS = { neetcode150: 150, blind75: 75, striver: 191 };
+            const LIST_NAMES  = { neetcode150: 'NeetCode 150', blind75: 'Blind 75', striver: "Striver's SDE" };
+            const { listName, goalDateStr } = settings;
+            const TOTAL     = LIST_TOTALS[listName] || 150;
+            const GOAL_DATE = new Date(goalDateStr + 'T23:59:59');
+            const today     = new Date();
+            const todayStr  = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+
+            const listProblems = problems.filter(p => p.listName === listName);
+            const uniqueSolved = new Set(listProblems.map(p => p.problemNumber)).size;
+
+            const msLeft   = GOAL_DATE - today;
+            const daysLeft = Math.max(0, Math.ceil(msLeft / (1000 * 60 * 60 * 24)));
+            const remaining    = TOTAL - uniqueSolved;
+            const neededPerDay = daysLeft > 0 ? (remaining / daysLeft).toFixed(1) : '–';
+            const solvedToday  = listProblems.filter(p => p.dateSolved.slice(0,10) === todayStr).length;
+            const pct          = Math.min(100, Math.round((uniqueSolved / TOTAL) * 100));
+
+            // Rebuild goal tracker HTML (in case it was replaced by setup prompt)
+            document.getElementById('goalTracker').innerHTML = `
+                <div class="goal-header">
+                    <div class="goal-title">🎯 ${LIST_NAMES[listName]} — ${new Date(goalDateStr).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})} Goal
+                        <button class="btn-small" onclick="openGoalSetup()" style="font-size:0.65rem;padding:0.2rem 0.5rem;margin-left:0.5rem;opacity:0.7;">✏ Edit</button>
+                    </div>
+                    <div class="goal-stats">
+                        <div class="goal-stat">
+                            <div class="goal-stat-value" id="goalSolved" style="color:var(--accent-primary)">${uniqueSolved}/${TOTAL}</div>
+                            <div class="goal-stat-label">Solved</div>
+                        </div>
+                        <div class="goal-stat">
+                            <div class="goal-stat-value" id="goalDaysLeft" style="color:var(--accent-warning)">${daysLeft}</div>
+                            <div class="goal-stat-label">Days Left</div>
+                        </div>
+                        <div class="goal-stat">
+                            <div class="goal-stat-value" id="goalPerDay" style="color:var(--accent-secondary)">${neededPerDay}</div>
+                            <div class="goal-stat-label">Needed/Day</div>
+                        </div>
+                        <div class="goal-stat">
+                            <div class="goal-stat-value" id="goalPace" style="color:var(--accent-primary)">${solvedToday} done</div>
+                            <div class="goal-stat-label">Today's Pace</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="goal-progress-bar">
+                    <div class="goal-progress-fill" id="goalProgressFill" style="width:${pct}%"></div>
+                </div>
+                <div class="goal-grid-label">Daily solve activity (hover for details)</div>
+                <div class="goal-grid" id="goalGrid"></div>
+                <div class="goal-legend">
+                    <div class="legend-item"><div class="legend-dot" style="background:rgba(255,71,87,0.4)"></div>0 solved</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:rgba(255,165,2,0.4)"></div>Below target</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:rgba(0,255,136,0.4)"></div>On target</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:rgba(0,217,255,0.4)"></div>Above target</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:var(--bg-tertiary); border:1px solid var(--border-color)"></div>Future</div>
+                </div>
+            `;
+
+            // Determine start date: earliest solve date for this list, or today
+            const allDates = listProblems.map(p => p.dateSolved.slice(0,10)).sort();
+            const START_DATE = allDates.length > 0 ? new Date(allDates[0]) : today;
+            const END_DATE   = GOAL_DATE;
+
+            // Build solve-by-day map
+            const solvesByDay = {};
+            listProblems.forEach(p => {
+                const sd = new Date(p.dateSolved);
+                const d = `${sd.getFullYear()}-${String(sd.getMonth()+1).padStart(2,'0')}-${String(sd.getDate()).padStart(2,'0')}`;
+                solvesByDay[d] = (solvesByDay[d] || 0) + 1;
+            });
+
+            const totalDays  = Math.round((END_DATE - START_DATE) / (1000 * 60 * 60 * 24)) + 1;
+            const dailyTarget = TOTAL / totalDays;
+
+            const grid = document.getElementById('goalGrid');
+            grid.innerHTML = '';
+
+            let cursor = new Date(START_DATE);
+            while (cursor <= END_DATE) {
+                const ds = cursor.toISOString().slice(0, 10);
+                const count = solvesByDay[ds] || 0;
+                const isToday = ds === todayStr;
+                const isFuture = cursor > today && !isToday;
+
+                const div = document.createElement('div');
+                div.className = 'goal-day';
+                if (isFuture) {
+                    div.classList.add('day-future');
+                    div.textContent = '';
+                } else if (count === 0) {
+                    div.classList.add('day-empty');
+                    div.textContent = '0';
+                } else if (count < dailyTarget) {
+                    // below target (e.g. 1 when target is 1.9)
+                    div.classList.add('day-under');
+                    div.textContent = count;
+                } else if (count < dailyTarget + 1) {
+                    // on target (e.g. 2 when target is 1.9)
+                    div.classList.add('day-exact');
+                    div.textContent = count;
+                } else {
+                    // above target
+                    div.classList.add('day-over');
+                    div.textContent = count;
+                }
+                if (isToday) div.classList.add('day-today');
+
+                // Tooltip
+                const monthDay = cursor.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                div.title = `${monthDay}: ${isFuture ? 'future' : count + ' problem' + (count !== 1 ? 's' : '') + ' solved'}`;
+
+                grid.appendChild(div);
+                cursor.setDate(cursor.getDate() + 1);
+            }
+        }
+
+        // ── Modal helpers ──────────────────────────────────────────────
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        // Close modal on overlay click
+        document.addEventListener('click', e => {
+            if (e.target.classList.contains('modal-overlay')) {
+                e.target.classList.remove('active');
+            }
+        });
+
+        // ── Manual Revision ────────────────────────────────────────────
+        function openManualRevision(problemId) {
+            const problems = loadProblems();
+            const problem = problems.find(p => p.id === problemId);
+            if (!problem) return;
+            const details = getProblemDetails(problem.listName, problem.problemNumber, problem.customData);
+            const manualRevisions = problem.manualRevisions || [];
+            const revCount = manualRevisions.length;
+
+            document.getElementById('manualRevisionContent').innerHTML = `
+                <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom:1rem;">
+                    Logging a manual (extra) revision for:
+                </p>
+                <div class="random-problem-card">
+                    <div class="random-problem-name">${details.name}</div>
+                    <div class="random-problem-meta">
+                        <span class="topic-badge">${details.topic}</span>
+                        <span class="difficulty-badge difficulty-${(details.difficulty||'').toLowerCase()}">${details.difficulty}</span>
+                    </div>
+                    <div style="font-size:0.8rem; color:var(--text-secondary);">
+                        Manual revisions so far: <strong style="color:var(--text-primary)">${revCount}</strong>
+                        ${revCount > 0 ? `&nbsp;· Last: ${formatDate(manualRevisions[revCount-1].date)} in ${manualRevisions[revCount-1].timeTaken} min` : ''}
+                    </div>
+                </div>
+                <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.05em;">Time taken (minutes)</label>
+                <div class="time-input-row">
+                    <input type="number" id="manualRevTime" min="0.1" step="0.1" placeholder="e.g. 15" style="width:140px;">
+                    <button class="btn-random" style="flex:1;" onclick="saveManualRevision(${problemId})">Save Revision</button>
+                </div>
+            `;
+            openModal('manualRevisionModal');
+        }
+
+        function saveManualRevision(problemId) {
+            const timeTaken = parseFloat(document.getElementById('manualRevTime').value);
+            if (isNaN(timeTaken) || timeTaken <= 0) {
+                showNotification('Please enter a valid time', 'error');
+                return;
+            }
+            const problems = loadProblems();
+            const idx = problems.findIndex(p => p.id === problemId);
+            if (idx === -1) return;
+            if (!problems[idx].manualRevisions) problems[idx].manualRevisions = [];
+            problems[idx].manualRevisions.push({ timeTaken, date: new Date().toISOString() });
+            saveProblems(problems);
+            closeModal('manualRevisionModal');
+            renderProblems(problems);
+            showNotification(`Manual revision logged: ${timeTaken} min`, 'success');
+        }
+
+        // ── Random Revision ────────────────────────────────────────────
+        function openRandomModal() {
+            const problems = loadProblems();
+            if (problems.length === 0) {
+                showNotification('No solved problems yet!', 'error');
+                return;
+            }
+            pickRandomProblem(problems);
+            openModal('randomModal');
+        }
+
+        function pickRandomProblem(problems) {
+            const problems2 = problems || loadProblems();
+            const pick = problems2[Math.floor(Math.random() * problems2.length)];
+            const details = getProblemDetails(pick.listName, pick.problemNumber, pick.customData);
+            const allTimes = [pick.timeTaken, ...(pick.revisionTimes||[]).map(r=>r.timeTaken), ...(pick.manualRevisions||[]).map(r=>r.timeTaken)];
+            const best = Math.min(...allTimes);
+
+            document.getElementById('randomModalContent').innerHTML = `
+                <div class="random-problem-card">
+                    <div class="random-problem-name">#${pick.problemNumber} · ${details.name}</div>
+                    <div class="random-problem-meta">
+                        <span class="topic-badge">${details.topic}</span>
+                        <span class="difficulty-badge difficulty-${(details.difficulty||'').toLowerCase()}">${details.difficulty}</span>
+                    </div>
+                    <div style="font-size:0.8rem; color:var(--text-secondary);">
+                        Initial time: <strong style="color:var(--text-primary)">${pick.timeTaken} min</strong>
+                        &nbsp;· Best time: <strong style="color:var(--accent-primary)">${best} min</strong>
+                    </div>
+                    <a href="${details.link}" target="_blank" class="problem-link" style="margin-top:0.75rem; display:inline-block;">Solve on NeetCode →</a>
+                </div>
+                <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.05em;">Time taken (minutes)</label>
+                <div class="time-input-row">
+                    <input type="number" id="randomRevTime" min="0.1" step="0.1" placeholder="e.g. 12">
+                    <button class="btn-random" style="flex:1;" onclick="saveRandomRevision(${pick.id})">Log & Save</button>
+                </div>
+                <button class="btn-small" style="margin-top:0.75rem; width:100%; text-align:center;" onclick="pickRandomProblem()">🔀 Pick another</button>
+            `;
+        }
+
+        function saveRandomRevision(problemId) {
+            const timeTaken = parseFloat(document.getElementById('randomRevTime').value);
+            if (isNaN(timeTaken) || timeTaken <= 0) {
+                showNotification('Please enter a valid time', 'error');
+                return;
+            }
+            const problems = loadProblems();
+            const idx = problems.findIndex(p => p.id === problemId);
+            if (idx === -1) return;
+            if (!problems[idx].manualRevisions) problems[idx].manualRevisions = [];
+            problems[idx].manualRevisions.push({ timeTaken, date: new Date().toISOString() });
+            saveProblems(problems);
+            closeModal('randomModal');
+            renderProblems(problems);
+            showNotification(`Random revision logged: ${timeTaken} min`, 'success');
+        }
+
+        // ── Analyse ────────────────────────────────────────────────────
+        function openAnalyseModal() {
+            const problems = loadProblems();
+            if (problems.length === 0) {
+                showNotification('No data to analyse yet!', 'error');
+                return;
+            }
+
+            // Difficulty-aware "good enough" thresholds in minutes
+            const THRESHOLD = { Easy: 15, Medium: 25, Hard: 40 };
+
+            const analysis = problems.map(problem => {
+                const details = getProblemDetails(problem.listName, problem.problemNumber, problem.customData);
+                const threshold = THRESHOLD[details.difficulty] || 25;
+
+                // ── Build a unified chronological timeline of ALL attempts ──────
+                // Each entry: { time, label, date, type }
+                // Initial solve has the problem's dateSolved as its date
+                const timeline = [
+                    { time: problem.timeTaken, label: 'Initial', type: 'sr', date: problem.dateSolved }
+                ];
+                // SR reps (already in order 1→2→3)
+                (problem.revisionTimes || []).forEach(r =>
+                    timeline.push({ time: r.timeTaken, label: `Rep ${r.revisionNumber}`, type: 'sr', date: r.date })
+                );
+                // Manual revisions sorted by actual date
+                const sortedManual = [...(problem.manualRevisions || [])].sort((a,b) => new Date(a.date) - new Date(b.date));
+                sortedManual.forEach((r, i) =>
+                    timeline.push({ time: r.timeTaken, label: `Revision ${i+1}`, type: 'manual', date: r.date })
+                );
+                // Sort full timeline by date so SR and manual interleave correctly
+                timeline.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+                const srTimes     = timeline.filter(t => t.type === 'sr');
+                const manualTimes = timeline.filter(t => t.type === 'manual');
+                const allTimes    = timeline; // full sorted timeline
+
+                const initialTime = problem.timeTaken;
+                // True latest = last entry in the date-sorted timeline
+                const latestTime  = allTimes[allTimes.length - 1].time;
+
+                // ── Linear regression over all attempts ─────────────────────────
+                // x = attempt index (0,1,2...), y = time taken
+                // slope < 0 means improving over time, slope > 0 means getting slower
+                const n = allTimes.length;
+                let trendSlope = 0;
+                if (n >= 3) {
+                    const xMean = (n - 1) / 2;
+                    const yMean = allTimes.reduce((s, t) => s + t.time, 0) / n;
+                    const num   = allTimes.reduce((s, t, i) => s + (i - xMean) * (t.time - yMean), 0);
+                    const den   = allTimes.reduce((s, _, i) => s + (i - xMean) ** 2, 0);
+                    trendSlope  = den !== 0 ? num / den : 0;
+                    // Round to 1dp for display
+                    trendSlope  = Math.round(trendSlope * 10) / 10;
+                } else if (n === 2) {
+                    // Only two points — slope is simply the difference
+                    trendSlope = allTimes[1].time - allTimes[0].time;
+                    trendSlope = Math.round(trendSlope * 10) / 10;
+                }
+
+                // ── Stats ────────────────────────────────────────────────────────
+                const rawTimes  = allTimes.map(t => t.time);
+                const mean      = Math.round(rawTimes.reduce((a,b) => a+b, 0) / n * 10) / 10;
+                const best      = Math.min(...rawTimes);
+                const worst     = Math.max(...rawTimes);
+                const stdDev    = n > 1
+                    ? Math.round(Math.sqrt(rawTimes.map(t => (t - mean) ** 2).reduce((a,b) => a+b, 0) / n) * 10) / 10
+                    : 0;
+
+                // first→latest improvement (for display)
+                const totalImprovement = initialTime - latestTime;
+                const improvePct = initialTime > 0 ? Math.round((totalImprovement / initialTime) * 100) : 0;
+
+                // ── Classification flags ─────────────────────────────────────────
+                const noData       = n === 1;
+                // Trend-based regression: slope > +2 min/attempt means clearly worsening
+                const isRegressing = !noData && trendSlope > 2;
+                // Consistently slow: mean above threshold (not just one bad attempt)
+                const isSlow       = mean > threshold;
+                // Latest attempt slow (still struggling NOW)
+                const isLatestSlow = latestTime > threshold;
+
+                // ── Weakness score ───────────────────────────────────────────────
+                // Uses all signals weighted appropriately
+                const overThreshold = Math.max(0, latestTime - threshold);
+                const weaknessScore =
+                    overThreshold * 3 +              // latest over threshold (main signal)
+                    Math.max(0, trendSlope) * 5 +    // worsening trend (per minute/attempt)
+                    (mean > threshold ? (mean - threshold) * 1.5 : 0) + // consistently slow
+                    (noData ? 40 : 0);               // no revision data
+
+                return {
+                    problem, details, threshold,
+                    srTimes, manualTimes, allTimes, n,
+                    initialTime, latestTime, best, worst,
+                    mean, stdDev, trendSlope,
+                    totalImprovement, improvePct,
+                    noData, isRegressing, isSlow, isLatestSlow,
+                    weaknessScore
+                };
+            });
+
+            // Sort by weakness score descending
+            const sorted = [...analysis].sort((a, b) => b.weaknessScore - a.weaknessScore);
+
+            // Classification:
+            // Needs Work = latest slow OR trend worsening OR no data
+            // Doing Well = latest within threshold AND trend flat/improving AND has revision data
+            const needsWork = sorted.filter(a => a.isLatestSlow || a.isRegressing || a.noData);
+            const doingWell = sorted.filter(a => !a.isLatestSlow && !a.isRegressing && !a.noData);
+
+            function renderItem(a, isWeak) {
+                // Render full timeline with colour coding by type
+                const timelineLine = a.allTimes.map(t => {
+                    const col = t.type === 'sr' ? 'var(--accent-primary)' : 'var(--accent-secondary)';
+                    const overUnder = t.time > a.threshold
+                        ? `style="color:var(--accent-danger);"` 
+                        : `style="color:${col};"`;
+                    return `<span ${overUnder}>${t.label}: <strong>${t.time}m</strong></span>`;
+                }).join(' → ');
+
+                // Trend description
+                let trendDesc = '';
+                if (a.n === 1) {
+                    trendDesc = `<span style="color:var(--accent-warning);">⚠ No revision data yet</span>`;
+                } else if (a.trendSlope < -0.5) {
+                    trendDesc = `<span class="trend-good">↓ Improving ~${Math.abs(a.trendSlope)}m/attempt</span>`;
+                } else if (a.trendSlope > 2) {
+                    trendDesc = `<span class="trend-improve">↑ Worsening ~${a.trendSlope}m/attempt — revisit</span>`;
+                } else {
+                    trendDesc = `<span style="color:var(--text-secondary);">→ Roughly flat trend</span>`;
+                }
+
+                // Why it's in needs work
+                let reasonHtml = '';
+                if (isWeak) {
+                    const reasons = [];
+                    if (a.noData)          reasons.push('no revision data');
+                    if (a.isLatestSlow)    reasons.push(`latest (${a.latestTime}m) above ${a.threshold}m target`);
+                    if (a.isRegressing)    reasons.push('trend is worsening');
+                    if (reasons.length)    reasonHtml = `<div style="font-size:0.75rem; color:var(--accent-danger); margin-bottom:0.3rem;">⚑ ${reasons.join(' · ')}</div>`;
+                }
+
+                const reviseBtn = isWeak
+                    ? `<button class="btn-small btn-revision" onclick="closeModal('analyseModal'); openManualRevision(${a.problem.id})">+ Log Revision</button>`
+                    : '';
+
+                return `
+                    <div class="analyse-item" style="border-left:3px solid ${isWeak ? 'var(--accent-danger)' : 'var(--accent-primary)'};">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.4rem;">
+                            <div>
+                                <div class="analyse-item-name">#${a.problem.problemNumber} · ${a.details.name}</div>
+                                <div style="display:flex; gap:0.4rem; margin-top:0.3rem; flex-wrap:wrap;">
+                                    <span class="topic-badge">${a.details.topic}</span>
+                                    <span class="difficulty-badge difficulty-${(a.details.difficulty||'').toLowerCase()}">${a.details.difficulty}</span>
+                                    <span style="font-size:0.7rem; color:var(--text-secondary);">target ≤${a.threshold}m</span>
+                                </div>
+                            </div>
+                            ${reviseBtn}
+                        </div>
+                        ${reasonHtml}
+                        <div style="margin-bottom:0.4rem; display:flex; flex-wrap:wrap; gap:0.4rem; align-items:center; line-height:1.8;">
+                            ${timelineLine}
+                        </div>
+                        <div style="font-size:0.78rem; color:var(--text-secondary); display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:0.3rem;">
+                            <span>best <strong style="color:var(--accent-primary)">${a.best}m</strong></span>
+                            <span>latest <strong style="color:${a.isLatestSlow ? 'var(--accent-danger)' : 'var(--accent-primary)'}">${a.latestTime}m</strong></span>
+                            <span>avg <strong style="color:var(--text-primary)">${a.mean}m</strong></span>
+                            <span>σ <strong style="color:var(--text-primary)">${a.stdDev}m</strong></span>
+                            <span>${a.n} attempts</span>
+                        </div>
+                        <div class="analyse-item-trend">${trendDesc}</div>
+                    </div>
+                `;
+            }
+
+            const weakHtml = needsWork.length > 0
+                ? needsWork.map(a => renderItem(a, true)).join('')
+                : '<p style="color:var(--accent-primary); font-size:0.85rem; padding:1rem 0;">All problems looking solid! 🎉</p>';
+
+            const wellHtml = doingWell.length > 0
+                ? doingWell.map(a => renderItem(a, false)).join('')
+                : '';
+
+            document.getElementById('analyseModalContent').innerHTML = `
+                <div style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:1.25rem; line-height:1.6;">
+                    Timeline shows all attempts in date order. 
+                    <span style="color:var(--accent-primary);">■</span> SR reps &nbsp;
+                    <span style="color:var(--accent-secondary);">■</span> Manual revisions &nbsp;
+                    <span style="color:var(--accent-danger);">■</span> Over target
+                </div>
+                <div style="margin-bottom:1.25rem;">
+                    <div style="font-size:0.8rem; color:var(--accent-danger); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:0.75rem; font-weight:700;">
+                        ⚠ Needs Work (${needsWork.length})
+                    </div>
+                    ${weakHtml}
+                </div>
+                ${doingWell.length > 0 ? `
+                <div>
+                    <div style="font-size:0.8rem; color:var(--accent-primary); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:0.75rem; font-weight:700;">
+                        ✓ Doing Well (${doingWell.length})
+                    </div>
+                    ${wellHtml}
+                </div>` : ''}
+            `;
+            openModal('analyseModal');
+        }
+
+        // ── Export / Import ────────────────────────────────────────────
+        function exportData() {
+            const problems = loadProblems();
+            const goalSettings = loadGoalSettings();
+            const exportObj = { problems, goalSettings, exportedAt: new Date().toISOString() };
+            const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `dsa-tracker-backup-${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showNotification('Data exported successfully!', 'success');
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    // Support both flat array (old) and { problems, goalSettings } (new)
+                    const problems = Array.isArray(data) ? data : (data.problems || []);
+                    const goalSettings = data.goalSettings || null;
+                    if (!Array.isArray(problems)) throw new Error('Invalid format');
+                    if (!confirm(`Import ${problems.length} problems? This will REPLACE your current data.`)) return;
+                    saveProblems(problems);
+                    if (goalSettings) saveGoalSettings(goalSettings);
+                    const loaded = loadProblems();
+                    renderProblems(loaded);
+                    renderDueToday(loaded);
+                    updateStats(loaded);
+                    renderGoalTracker(loaded);
+                    showNotification(`Imported ${problems.length} problems successfully!`, 'success');
+                } catch (err) {
+                    alert('Import failed: Invalid JSON file. ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        // ── Goal Setup ─────────────────────────────────────────────────
+        function openGoalSetup() {
+            const settings = loadGoalSettings();
+            if (settings) {
+                document.getElementById('goalListSelect').value = settings.listName || 'neetcode150';
+                document.getElementById('goalDateInput').value = settings.goalDateStr || '';
+            } else {
+                // Default: tomorrow
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 90);
+                document.getElementById('goalDateInput').value = tomorrow.toISOString().slice(0,10);
+            }
+            openModal('goalSetupModal');
+        }
+
+        function saveGoalSetup() {
+            const listName = document.getElementById('goalListSelect').value;
+            const goalDateStr = document.getElementById('goalDateInput').value;
+            if (!goalDateStr) { showNotification('Please pick a date', 'error'); return; }
+            if (new Date(goalDateStr) <= new Date()) { showNotification('Date must be in the future', 'error'); return; }
+            saveGoalSettings({ listName, goalDateStr });
+            closeModal('goalSetupModal');
+            const problems = loadProblems();
+            renderGoalTracker(problems);
+            showNotification('Goal saved!', 'success');
+        }
+
+        // ── Form tabs ──────────────────────────────────────────────────
+        function switchFormTab(tab) {
+            document.getElementById('problemForm').style.display   = tab === 'standard' ? 'block' : 'none';
+            document.getElementById('formByName').style.display    = tab === 'byname'   ? 'block' : 'none';
+            document.getElementById('formCustom').style.display    = tab === 'custom'   ? 'block' : 'none';
+            ['tabStandard','tabByName','tabCustom'].forEach(id => {
+                document.getElementById(id).style.background = 'var(--bg-tertiary)';
+                document.getElementById(id).style.color = 'var(--text-secondary)';
+            });
+            const activeId = tab === 'standard' ? 'tabStandard' : tab === 'byname' ? 'tabByName' : 'tabCustom';
+            document.getElementById(activeId).style.background = 'var(--accent-primary)';
+            document.getElementById(activeId).style.color = '#000';
+        }
+
+        // ── Problem number preview ─────────────────────────────────────
+        function onListChange() {
+            const listName = document.getElementById('listName').value;
+            const num = parseInt(document.getElementById('problemNumber').value);
+            if (listName && num) {
+                const d = getProblemDetails(listName, num);
+                document.getElementById('problemPreview').textContent = d.name !== `Problem #${num}` ? `→ ${d.name}` : '';
+            }
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            const numInput = document.getElementById('problemNumber');
+            if (numInput) numInput.addEventListener('input', onListChange);
+        });
+
+        // ── By Name search ─────────────────────────────────────────────
+        function onListChangeByName() { searchProblems(); }
+
+        function getListMap(listName) {
+            if (listName === 'neetcode150') return NEETCODE_150_PROBLEMS;
+            if (listName === 'blind75')     return BLIND_75_PROBLEMS;
+            if (listName === 'striver')     return STRIVER_PROBLEMS;
+            return {};
+        }
+
+        function searchProblems() {
+            const listName = document.getElementById('listNameByName').value;
+            const query = document.getElementById('problemNameSearch').value.toLowerCase().trim();
+            const resultsDiv = document.getElementById('searchResults');
+            if (!listName || !query) { resultsDiv.style.display = 'none'; return; }
+            const map = getListMap(listName);
+            const matches = Object.entries(map)
+                .filter(([, v]) => v.name.toLowerCase().includes(query))
+                .slice(0, 12);
+            if (matches.length === 0) { resultsDiv.style.display = 'none'; return; }
+            resultsDiv.style.display = 'block';
+            // Use data attributes — avoids any quote-escaping bug with apostrophes in names
+            resultsDiv.innerHTML = matches.map(([num, v]) =>
+                `<div data-num="${num}" data-list="${listName}"
+                    style="padding:0.5rem 0.75rem;cursor:pointer;border-bottom:1px solid var(--border-color);font-size:0.82rem;"
+                    onmouseover="this.style.background='var(--bg-tertiary)'" onmouseout="this.style.background=''"
+                >#${num} · ${v.name} <span style="color:var(--text-secondary);font-size:0.75rem;">${v.topic||''}</span></div>`
+            ).join('');
+            // Store names in a map keyed by num to avoid passing through HTML at all
+            const nameMap = Object.fromEntries(matches.map(([num, v]) => [num, v.name]));
+            resultsDiv.querySelectorAll('div[data-num]').forEach(el => {
+                el.addEventListener('click', () => selectProblem(
+                    parseInt(el.dataset.num),
+                    nameMap[el.dataset.num],
+                    el.dataset.list
+                ));
+            });
+        }
+
+        function selectProblem(num, name, listName) {
+            document.getElementById('selectedProblemNumber').value = num;
+            document.getElementById('problemNameSearch').value = name;
+            document.getElementById('selectedProblemInfo').textContent = `#${num} · ${name}`;
+            document.getElementById('searchResults').style.display = 'none';
+        }
+
+
+        function submitByName(e) {
+            e.preventDefault();
+            const listName = document.getElementById('listNameByName').value;
+            const num = parseInt(document.getElementById('selectedProblemNumber').value);
+            const timeTaken = parseFloat(document.getElementById('timeTakenByName').value);
+            if (!listName || !num || isNaN(timeTaken) || timeTaken <= 0) {
+                showNotification('Please select a list, pick a problem and enter time', 'error'); return;
+            }
+            addProblemToList(num, listName, timeTaken, null);
+            document.getElementById('formByName').reset();
+            document.getElementById('selectedProblemInfo').textContent = '';
+        }
+
+        // ── Custom problem submission ───────────────────────────────────
+        function submitCustom(e) {
+            e.preventDefault();
+            const name = document.getElementById('customName').value.trim();
+            const num  = parseInt(document.getElementById('customNumber').value) || Date.now() % 100000;
+            const link = document.getElementById('customLink').value.trim();
+            const difficulty = document.getElementById('customDifficulty').value;
+            const topic = document.getElementById('customTopic').value.trim() || 'Custom';
+            const timeTaken = parseFloat(document.getElementById('customTime').value);
+            if (!name || isNaN(timeTaken) || timeTaken <= 0) {
+                showNotification('Name and time are required', 'error'); return;
+            }
+            const customData = { name, link, difficulty, topic };
+            addProblemToList(num, 'custom', timeTaken, customData);
+            document.getElementById('formCustom').reset();
+        }
+
+        // ── Core add-problem logic (shared by all form types) ──────────
+        function addProblemToList(problemNumber, listName, timeTaken, customData) {
+            const now = new Date();
+            const firstRevisionDate = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+            const newProblem = {
+                id: Date.now(),
+                problemNumber,
+                timeTaken,
+                listName,
+                customData: customData || null,
+                dateSolved: now.toISOString(),
+                nextRevisionDate: firstRevisionDate.toISOString(),
+                revisionNumber: 0,
+                lastRevisedDate: null
+            };
+            const details = customData
+                ? { name: customData.name }
+                : getProblemDetails(listName, problemNumber);
+
+            const problems = loadProblems();
+            const existing = problems.find(p => p.problemNumber === problemNumber && p.listName === listName);
+            if (existing) {
+                if (!confirm(`"${details.name}" already exists. Add duplicate?`)) return;
+            }
+            problems.push(newProblem);
+            saveProblems(problems);
+            renderProblems(problems);
+            renderDueToday(problems);
+            updateStats(problems);
+            renderGoalTracker(problems);
+            showNotification(`Added: ${details.name}`, 'success');
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Page loaded, initializing...');
+            console.log('localStorage available:', useLocalStorage);
+            
+            // Update storage indicator
+            const indicator = document.getElementById('storageIndicator');
+            if (indicator) {
+                if (useLocalStorage) {
+                    indicator.textContent = '✓ Storage: localStorage (persists across sessions)';
+                    indicator.style.color = 'var(--accent-primary)';
+                } else {
+                    indicator.textContent = '⚠ Storage: Memory only (data will be lost on refresh)';
+                    indicator.style.color = 'var(--accent-warning)';
+                }
+            }
+            
+            initializeWithData();
+            
+            const problems = loadProblems();
+            renderProblems(problems);
+            renderDueToday(problems);
+            updateStats(problems);
+            renderGoalTracker(problems);
+            
+            console.log('Initialization complete');
+        });
+
+        // Register Service Worker for PWA support
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/DSA-Tracker/service-worker.js')
+                    .then((registration) => {
+                        console.log('✅ Service Worker registered:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.log('❌ Service Worker registration failed:', error);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>

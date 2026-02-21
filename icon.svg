@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Modern gradient background -->
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e293b;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="textGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#06b6d4;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Glow effect -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background with rounded corners -->
+  <rect width="512" height="512" fill="url(#bgGrad)" rx="110"/>
+  
+  <!-- Main DSA text - BIG and BOLD -->
+  <text 
+    x="256" 
+    y="280" 
+    font-family="SF Pro Display, -apple-system, system-ui, sans-serif" 
+    font-size="180" 
+    font-weight="900" 
+    fill="url(#textGrad)" 
+    text-anchor="middle"
+    filter="url(#glow)">DSA</text>
+  
+  <!-- Modern subtitle -->
+  <text 
+    x="256" 
+    y="380" 
+    font-family="SF Pro Display, -apple-system, system-ui, sans-serif" 
+    font-size="36" 
+    font-weight="600" 
+    fill="#64748b" 
+    text-anchor="middle"
+    letter-spacing="4">TRACKER</text>
+  
+  <!-- Modern progress bar indicator -->
+  <rect x="156" y="420" width="200" height="8" rx="4" fill="#1e293b"/>
+  <rect x="156" y="420" width="120" height="8" rx="4" fill="url(#textGrad)"/>
+</svg>

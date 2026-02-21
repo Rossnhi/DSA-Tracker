@@ -1659,7 +1659,7 @@
         // Schedule: solve → Rep1 +3d → Rep2 +6d from Rep1 actual date → Rep3 +12d from Rep2 actual date
         function calculateNextRevisionDate(problem, oldRevNum, completedAt) {
             const base = new Date(completedAt || problem.lastRevisedDate || problem.dateSolved);
-            const daysToAdd = oldRevNum === 0 ? 3 : oldRevNum === 1 ? 6 : 12;
+            const daysToAdd = oldRevNum === 0 ? 6 : oldRevNum === 1 ? 12 : 0;
             return new Date(base.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
         }
 

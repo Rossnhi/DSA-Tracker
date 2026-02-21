@@ -2,7 +2,7 @@
   "name": "DSA Problem Tracker",
   "short_name": "DSA Tracker",
   "description": "Track DSA problems with spaced repetition for interview prep",
-  "start_url": "/DSA-Tracker/dsa-tracker.html",
+  "start_url": "/DSA-Tracker/index.html",
   "display": "standalone",
   "background_color": "#0a0e17",
   "theme_color": "#00ff88",

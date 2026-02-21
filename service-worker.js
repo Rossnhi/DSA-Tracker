@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dsa-tracker-v3';
+const CACHE_NAME = 'dsa-tracker-v1';
 const BASE = '/DSA-Tracker';
 const urlsToCache = [
   `${BASE}/index.html`,

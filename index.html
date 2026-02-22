@@ -835,9 +835,8 @@
             <p class="subtitle">Spaced Repetition System</p>
             <div style="display:flex; gap:0.75rem; margin-top:0.75rem; flex-wrap:wrap; align-items:center; justify-content:center;">
                 <button class="btn-small" onclick="exportData()" style="background:var(--bg-tertiary);color:var(--text-secondary);border:1px solid var(--border-color);">↑ Export Data</button>
-                <label class="btn-small" style="background:var(--bg-tertiary);color:var(--text-secondary);border:1px solid var(--border-color);cursor:pointer;display:inline-flex;align-items:center;vertical-align:middle;">
-                ↓ Import Data<input type="file" id="importFile" accept=".json" style="display:none;" onchange="importData(event)">
-                </label>
+                <button class="btn-small" onclick="document.getElementById('importFile').click()" style="background:var(--bg-tertiary);color:var(--text-secondary);border:1px solid var(--border-color);">↓ Import Data</button>
+                <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importData(event)">
             </div>
             <p id="storageIndicator" style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;"></p>
         </header>

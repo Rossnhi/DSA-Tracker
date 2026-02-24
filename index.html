@@ -1866,7 +1866,9 @@
                 }[problem.listName] || problem.listName;
 
                 const revisionNum = (problem.revisionNumber || 0) + 1;
-                const daysOverdue = Math.floor((getTodayDate() - new Date(problem.nextRevisionDate)) / (24 * 60 * 60 * 1000));
+                const revDate = new Date(problem.nextRevisionDate);
+                const revDateMidnight = new Date(revDate.getFullYear(), revDate.getMonth(), revDate.getDate());
+                const daysOverdue = Math.floor((getTodayDate() - revDateMidnight) / (24 * 60 * 60 * 1000));
                 const isOverdue = daysOverdue > 0;
 
                 return `

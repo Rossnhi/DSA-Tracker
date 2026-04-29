@@ -2123,8 +2123,7 @@
                 solvesByDay[d] = (solvesByDay[d] || 0) + 1;
             });
 
-            const totalDays  = Math.round((END_DATE - START_DATE) / (1000 * 60 * 60 * 24)) + 1;
-            const dailyTarget = TOTAL / totalDays;
+            const dailyTarget = daysLeft > 0 ? remaining / daysLeft : 0;
 
             const grid = document.getElementById('goalGrid');
             grid.innerHTML = '';
